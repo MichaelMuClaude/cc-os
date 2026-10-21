@@ -13,7 +13,7 @@ index 2816ca8..b0103e8 100755
  
  if [[ -n $LOCAL_OMARCHY_PATH ]]; then
 diff --git a/builder/build-iso.sh b/builder/build-iso.sh
-index e6d2431..aa7a0d1 100755
+index e6d2431..64abd19 100755
 --- a/builder/build-iso.sh
 +++ b/builder/build-iso.sh
 @@ -442,6 +442,14 @@ fi
@@ -27,7 +27,7 @@ index e6d2431..aa7a0d1 100755
 +# (same gap as "custom_commands"), so cc-os-sudo-setup has to land in
 +# omarchy-base.packages specifically to actually be installed on the target
 +# instead of just cached into the offline mirror.
-+printf '%s\n' "cc-os-sudo-setup" >>"$build_cache_dir/airootfs/usr/share/omarchy-iso/omarchy-base.packages"
++printf '%s\n' "cc-os-sudo-setup" "cc-os-claude-first-run" >>"$build_cache_dir/airootfs/usr/share/omarchy-iso/omarchy-base.packages"
  shipped_lists=(omarchy-base.packages omarchy-other.packages)
  if [[ $OMARCHY_ARCH == aarch64 ]]; then
    # The runtime's own detector, which stands alone wherever a copy of it is
@@ -40,7 +40,7 @@ index e6d2431..aa7a0d1 100755
 +    # cached into the offline mirror here, since the cidata answer file's
 +    # own "packages" list only chooses among what's already cached — it
 +    # does not itself expand what this build fetches.
-+    printf '%s\n' "cc-os-sudo-setup"
++    printf '%s\n' "cc-os-sudo-setup" "cc-os-claude-first-run"
    } | sort -u
  )
  

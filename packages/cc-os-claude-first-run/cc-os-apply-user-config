@@ -1,0 +1,25 @@
+#!/bin/bash
+# Idempotently adds CC/OS's personal Hyprland overrides to the user's config.
+# Appended at login rather than shipped in /etc/skel, because Omarchy's own
+# package already owns those skel files.
+changed=0
+hypr="$HOME/.config/hypr"
+mkdir -p "$hypr"
+if ! grep -q "cc-os-claude-toggle" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+S summons / hides Claude Desktop full screen.
+o.rebind("SUPER + S", "Claude", "/usr/lib/cc-os/cc-os-claude-toggle")
+LUA
+  changed=1
+fi
+if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
+  cat >>"$hypr/input.lua" <<'LUA'
+
+-- CC/OS: natural (inverse) touchpad scrolling.
+hl.config({ input = { touchpad = { natural_scroll = true } } })
+LUA
+  changed=1
+fi
+(( changed )) && hyprctl reload >/dev/null 2>&1
+exit 0

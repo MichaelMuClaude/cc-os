@@ -1,0 +1,31 @@
+#!/bin/bash
+# Super+S: summon Claude Desktop full screen; press again to hide it.
+# --show: bring it up (launching it if needed) but never hide it.
+class="com.anthropic.Claude"
+hd() { hyprctl dispatch "$1" >/dev/null 2>&1; }
+find_addr() { hyprctl clients -j | jq -r --arg c "$class" 'first(.[] | select(.class == $c) | .address) // empty'; }
+fullscreen() { hd "hl.dsp.window.fullscreen({ mode = \"fullscreen\", action = \"set\", window = \"address:$1\" })"; }
+
+addr=$(find_addr)
+if [[ -z $addr ]]; then
+  setsid uwsm-app -- claude-desktop >/dev/null 2>&1 &
+  for _ in $(seq 1 60); do
+    sleep 0.5; addr=$(find_addr); [[ -n $addr ]] && break
+  done
+  [[ -n $addr ]] || exit 1
+  fullscreen "$addr"
+  exit 0
+fi
+
+active=$(hyprctl activewindow -j | jq -r '.address // ""')
+if [[ $addr == "$active" && ${1:-} == "--show" ]]; then
+  fullscreen "$addr"
+elif [[ $addr == "$active" ]]; then
+  hd "hl.dsp.window.fullscreen({ mode = \"fullscreen\", action = \"unset\", window = \"address:$addr\" })"
+  hd "hl.dsp.window.move({ workspace = \"special:claude\", follow = false, window = \"address:$addr\" })"
+else
+  ws=$(hyprctl activeworkspace -j | jq -r '.id')
+  hd "hl.dsp.window.move({ workspace = \"$ws\", follow = true, window = \"address:$addr\" })"
+  hd "hl.dsp.focus({ window = \"address:$addr\" })"
+  fullscreen "$addr"
+fi

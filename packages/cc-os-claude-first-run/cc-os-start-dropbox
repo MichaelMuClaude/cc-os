@@ -1,0 +1,25 @@
+#!/bin/bash
+# The package ships no autostart entry, so start the daemon ourselves. The
+# daemon never opens a browser on its own -- it only prints a one-time sign-in
+# link -- so on a machine that isn't linked yet, open that link for the user.
+pacman -Q dropbox >/dev/null 2>&1 || exit 0
+state="${XDG_STATE_HOME:-$HOME/.local/state}/cc-os"; mkdir -p "$state"
+log="$state/dropbox.log"
+pgrep -x dropbox >/dev/null && exit 0
+
+(setsid uwsm-app -- /usr/bin/dropbox >"$log" 2>&1 </dev/null &)
+for _ in $(seq 1 30); do
+  sleep 2
+  url=$(grep -o 'https://www.dropbox.com/cli_link_nonce?nonce=[0-9a-f]*' "$log" | tail -1)
+  if [[ -n $url ]]; then
+    setsid xdg-open "$url" >/dev/null 2>&1 </dev/null &
+    # Claude opens full screen right after this and covers the browser, so say
+    # where the sign-in page went. Clicking the notification reopens it.
+    omarchy-notification-send -u critical "Sign in to Dropbox" \
+      "The sign-in page is open in your browser. Claude is full screen: press Super+S to hide it." \
+      --exec setsid xdg-open "$url" >/dev/null 2>&1 || true
+    break
+  fi
+  [[ -n $(/usr/lib/cc-os/cc-os-dropbox-status) ]] && break
+done
+exit 0

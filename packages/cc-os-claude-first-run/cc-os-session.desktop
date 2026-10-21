@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=CC/OS session start
+Exec=/usr/lib/cc-os/cc-os-session-start
+OnlyShowIn=Hyprland;
+X-GNOME-Autostart-enabled=true

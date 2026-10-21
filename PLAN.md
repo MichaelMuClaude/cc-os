@@ -1,6 +1,6 @@
 # CC/OS — Plan (v0.1, discussion draft)
 
-Last updated: 2026-10-21. This is a brainstorm snapshot, not a committed
+Last updated: 2026-10-21 (v0.2). This is a brainstorm snapshot, not a committed
 spec. Nothing in here has been implemented.
 
 ## 1. Core idea
@@ -34,9 +34,10 @@ Why Omarchy specifically:
 
 - **Claude is the default/sole agent**, not one option among several
   agent launchers.
-- **Custom rebrand**: boot splash, login screen, about screen, using
-  Omarchy's existing branding commands, pointed at CC/OS's own assets
-  instead of Omarchy's.
+- **Custom rebrand**: boot splash, about screen, and the look of the
+  (standard, PAM-based) login screen, using Omarchy's existing
+  branding commands, pointed at CC/OS's own assets instead of
+  Omarchy's.
 - **Aggressive app reduction**: strip most pre-installed apps down to a
   minimal fallback set — terminal, file manager, a minimal browser —
   on the thesis that Claude's own growing capabilities (browser
@@ -50,20 +51,19 @@ Why Omarchy specifically:
   memory `pattern-fcitx5-pinyin-hyprland-omarchy-setup.md` for the full
   writeup if this needs doing for real.)
 
-## 4. The hard, unresolved piece: "sign in with Claude"
+## 4. First-run setup: guided sign-in, not a custom login screen
 
-The most ambitious part of the idea, explicitly flagged as uncertain:
-replace the OS's user-creation/login flow with a "sign in with Claude"
-OAuth flow, and give Claude default passwordless sudo — i.e., a machine
-that Claude operates, not just uses.
+Dropped the earlier idea of replacing the OS login screen itself with
+a "sign in with Claude" OAuth flow (that would have meant a custom
+greeter bridging PAM and OAuth, and giving Claude passwordless sudo by
+default — more architectural risk than the idea needs).
 
-Known architectural reality: PAM/local Linux login and OAuth cloud auth
-are different systems and can't literally merge. A "Claude login
-screen" would have to be a custom greeter that performs the OAuth flow
-and then provisions/unlocks a real underlying local account — not a
-literal replacement of PAM itself. This piece has not been researched
-in implementation depth yet; it's the part most likely to turn out
-harder than it sounds.
+Instead: normal OS user account and login, like any Linux desktop.
+After a person's first login, CC/OS walks them through a short, guided
+setup — a wizard or first-run checklist — that gets them signed into
+the **Claude Desktop app** and **Claude Code** themselves, so they land
+in a working, authenticated environment without having to know what
+either of those sign-in flows normally require.
 
 ## 5. Naming
 
@@ -93,8 +93,8 @@ harder than it sounds.
   independently re-litigated against e.g. an Ubuntu/Debian base.
 - Exact minimal app set to keep (terminal, file manager, minimal
   browser was the first pass — not finalized).
-- Whether "sign in with Claude" + passwordless sudo is worth attempting
-  at all, versus a more conventional local-account setup with Claude
-  just being the default foreground app.
+- Exact shape of the first-run guided sign-in (a GUI wizard vs. a
+  terminal-based checklist vs. something embedded in the desktop
+  shell) — not decided yet.
 - No build, fork, or ISO work has started. This file is the discussion
   record, to be revised as the conversation continues.

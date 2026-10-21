@@ -1,6 +1,6 @@
 # CC/OS — Plan (v0.1, discussion draft)
 
-Last updated: 2026-10-21 (v0.3). This is a brainstorm snapshot, not a committed
+Last updated: 2026-10-21 (v0.4). This is a brainstorm snapshot, not a committed
 spec. Nothing in here has been implemented.
 
 ## 1. Core idea
@@ -32,6 +32,14 @@ Why Omarchy specifically:
 
 ## 3. What changes from stock Omarchy
 
+- **AI-first, not keyboard-shortcut-first.** Omarchy's whole design
+  language is keyboard-driven — a large surface of Hyprland shortcuts
+  you memorize to do things. CC/OS inverts that: instead of learning
+  shortcuts for "all these things," you tell Claude to do them. The
+  one dedicated hardware/key binding that remains is a **Claude hotkey
+  on the Super key** — like the Copilot key on recent Windows
+  keyboards — that summons Claude from anywhere, at any time, rather
+  than a sprawl of per-action shortcuts to memorize.
 - **Claude is the default/sole agent**, not one option among several
   agent launchers.
 - **Custom rebrand**: boot splash, about screen, and the look of the
@@ -105,6 +113,11 @@ either of those sign-in flows normally require.
   ones need an actual persistent backend/data store behind the skill
   (e.g. calendar needs real stored events, not just a stateless
   calculation) — not worked out yet.
+- How the Claude hotkey actually surfaces Claude when summoned — an
+  overlay window, a dropdown terminal, focus-switch to an
+  always-running instance — not decided. Hyprland has the low-level
+  global-hotkey/compositor hooks to bind a key system-wide; which of
+  those summon behaviors to build on top of it is still open.
 - Exact shape of the first-run guided sign-in (a GUI wizard vs. a
   terminal-based checklist vs. something embedded in the desktop
   shell) — not decided yet.

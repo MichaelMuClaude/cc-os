@@ -1,6 +1,6 @@
 # CC/OS — Plan (v0.1, discussion draft)
 
-Last updated: 2026-10-21 (v0.7). This is a brainstorm snapshot, not a committed
+Last updated: 2026-10-21 (v0.8). This is a brainstorm snapshot, not a committed
 spec. Nothing in here has been implemented.
 
 ## 1. Core idea
@@ -78,52 +78,68 @@ Why Omarchy specifically:
   it, not a replacement for having the data at all.
 - **Chinese input preconfigured out of the box**: Fcitx5 + Pinyin,
   so a Chinese-speaking user doesn't have to configure it themselves
-  after install. Verified end-to-end on real Omarchy 4.0.6 VMs
-  (multiple independent fresh installs, CLI-only, no GUI tool
-  involved) — superseding an earlier, wrong note here: `Ctrl+Space` **is**
-  the real, working fcitx5 trigger key on the actual shipped ISO (a
-  claim that `Super+I` is the toggle instead turned out to describe an
-  unreleased future branch's docs, not shipped behavior — confirmed via
-  `hyprctl binds` on a real install, where plain `Super+I` has no
-  binding at all). Provisioning plan for CC/OS's install pipeline,
-  once the Omarchy fork exists:
-  - Add `fcitx5-chinese-addons` to the base package list (the Pinyin
-    engine ships inside this one meta-package; no separate
-    `fcitx5-pinyin` package exists).
-  - During user provisioning — before first login, i.e. before fcitx5
-    has ever started for that user — write `~/.config/fcitx5/profile`
-    directly with Pinyin already in the input-method group (template
-    below). Doing this pre-first-boot sidesteps the one real gotcha
-    found during testing: fcitx5 caches its input-method list in
-    memory once running, and neither editing the profile file nor
-    fcitx5's own `fcitx5-remote -r` reload command refreshes a
-    *running* daemon — only a fresh process start does. Writing the
-    file before fcitx5 ever launches means first boot just reads it
-    correctly, no restart dance needed.
-  - In the input-method list, select/write the engine literally named
-    `pinyin` — not the look-alike `keyboard-cn-altgr-pinyin`-style XKB
-    keyboard-layout entries that also show up with "Pinyin" in the
-    name but are a dumb key-remap, not the real phonetic engine.
-  ```ini
-  [Groups/0]
-  Name=Default
-  Default Layout=us
-  DefaultIM=pinyin
+  after install. **Fully solved upstream as of Omarchy 4.5.0rc1
+  (released 2026-10-20) — no fork needed for this feature at all.**
+  DHH's team merged first-class Japanese/Chinese/Korean input-method
+  support directly into the installer on 2026-10-15, six days before
+  this was tested: `fcitx5-chinese-addons` (and the other CJK engines)
+  now ship unconditionally in Omarchy's base package set, the
+  installer's own autoinstall config accepts an explicit
+  `input_method` field, and the right fcitx5 profile gets written
+  during provisioning — before fcitx5 ever starts for that user, which
+  sidesteps the one real gotcha found while reverse-engineering this
+  (undocumented, pre-4.5 behavior): fcitx5 caches its input-method
+  list in memory once running, and neither editing the profile file
+  nor fcitx5's own `fcitx5-remote -r` reload command refreshes a
+  *running* daemon — only a fresh process start does. The switch key
+  is `Super+I` (not `Ctrl+Space`, which an earlier version of this note
+  claimed based on 4.0.6 behavior before this feature existed upstream
+  at all).
 
-  [Groups/0/Items/0]
-  Name=keyboard-us
-  Layout=
+  **Verified end-to-end today**, stock official ISO, zero customization:
+  downloaded `omarchy-4.5.0rc1.iso` from `iso.omarchy.org` (SHA256
+  checked against the published release hash), built a `cidata`
+  autoinstall drive (the standard cloud-init NoCloud mechanism Omarchy's
+  own installer already supports — see
+  [`manual/unattended-installs`](https://omarchy.org/manual/unattended-installs/))
+  with `omarchy_install.input_method` set to `"pinyin"` in
+  `user_configuration.json`, booted a VM with the ISO plus that drive
+  attached, and got a **fully unencrypted, fully unattended** install —
+  no keyboard touched, no prompts answered. First login: `cat
+  ~/.config/fcitx5/profile` already shows `DefaultIM=pinyin`, `Super+I`
+  switches the top-bar indicator to the fcitx5 Pinyin icon, and typing
+  in Chromium's address bar pops a real candidate window (`1.你好
+  2.👋 3.拟好...`) that commits correctly.
 
-  [Groups/0/Items/1]
-  Name=pinyin
-  Layout=
+  **One non-obvious infra gotcha hit along the way**: the `cidata`
+  drive must be attached as a **USB mass-storage device**
+  (`-device usb-storage` in QEMU terms, `--targetbus usb` in
+  `virt-install`), not as a SATA CD-ROM — a FAT-formatted raw image
+  attached as `device=cdrom` fails with `mount: can't read superblock`
+  and the installer silently falls back to the interactive wizard.
+  This is literally how Omarchy's own CI integration tests attach it
+  (`test/integration.d/base-test.sh` in `omacom/omarchy-iso`), so it's
+  a one-line fix once you know to look there.
 
-  [GroupOrder]
-  0=Default
-  ```
-  Full investigation, including the GUI-vs-CLI debugging trail and why
-  the earlier note here was wrong, is in personal memory
-  `pattern-fcitx5-pinyin-hyprland-omarchy-setup.md`.
+  **What CC/OS actually needs to do for this feature, given the above
+  is now entirely upstream's job**: maintain a `user_configuration.json`
+  template (a working one, tested today, is committed in this repo —
+  see `cidata/`) with `input_method: "pinyin"` pre-set, and attach it
+  alongside whatever stock Omarchy ISO CC/OS ships install media for.
+  No fork, no patch, no custom package, no touching fcitx5 config at
+  all. If CC/OS ever wants this forced rather than merely defaulted
+  (so a non-Chinese-layout install still gets Pinyin available, or to
+  support a language CC/OS cares about that Omarchy's own installer
+  doesn't yet default to for a given locale), that's a one-field change
+  in the same JSON file, still no fork.
+
+  Full investigation — including the now-obsolete GUI-vs-CLI debugging
+  trail from before 4.5.0rc1 existed, and why earlier notes here were
+  wrong twice (once claiming only the GUI path worked, once claiming
+  `Super+I` was undocumented vaporware) — is in personal memory
+  `pattern-fcitx5-pinyin-hyprland-omarchy-setup.md`. That history is
+  kept for the record, not because any of it is still the right way to
+  do this on 4.5.0rc1 or later.
 
 ## 4. First-run setup: guided sign-in, not a custom login screen
 
@@ -195,5 +211,10 @@ not, scoped how) is still open — see §6.
 - Exact shape of the first-run guided sign-in (a GUI wizard vs. a
   terminal-based checklist vs. something embedded in the desktop
   shell) — not decided yet.
-- No build, fork, or ISO work has started. This file is the discussion
-  record, to be revised as the conversation continues.
+- No fork or custom ISO work has started. One concrete, tested artifact
+  does exist in this repo now — a working `cidata` autoinstall template
+  (see `cidata/`) that preconfigures Chinese Pinyin input on a
+  completely stock Omarchy 4.5.0rc1 ISO, verified in a real VM install
+  — but it's a config file attached alongside the official installer,
+  not a fork or a custom image. This file is otherwise still the
+  discussion record, to be revised as the conversation continues.

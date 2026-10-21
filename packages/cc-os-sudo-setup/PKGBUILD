@@ -1,0 +1,27 @@
+# Maintainer: CC/OS
+pkgname=cc-os-sudo-setup
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="CC/OS: grants the wheel group passwordless sudo on first boot, so Claude Code can operate the machine without per-command password prompts"
+arch=('any')
+license=('MIT')
+depends=('sudo' 'systemd')
+source=('cc-os-wheel-nopasswd.service' 'cc-os-wheel-nopasswd-apply')
+sha256sums=('SKIP' 'SKIP')
+
+package() {
+  install -Dm644 "$srcdir/cc-os-wheel-nopasswd.service" \
+    "$pkgdir/usr/lib/systemd/system/cc-os-wheel-nopasswd.service"
+  install -Dm755 "$srcdir/cc-os-wheel-nopasswd-apply" \
+    "$pkgdir/usr/lib/cc-os/cc-os-wheel-nopasswd-apply"
+
+  # Enabled by shipping the multi-user.target.wants symlink directly, rather
+  # than a post_install() scriptlet: a bare post_install() function in
+  # PKGBUILD is build-time-only and is never picked up by pacman as an
+  # install hook unless wired through a separate .install file via the
+  # install= directive, so a plain function here would silently never run on
+  # the installed target.
+  install -d "$pkgdir/usr/lib/systemd/system/multi-user.target.wants"
+  ln -s ../cc-os-wheel-nopasswd.service \
+    "$pkgdir/usr/lib/systemd/system/multi-user.target.wants/cc-os-wheel-nopasswd.service"
+}

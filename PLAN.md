@@ -1,6 +1,6 @@
 # CC/OS — Plan (v0.1, discussion draft)
 
-Last updated: 2026-10-21 (v0.8). This is a brainstorm snapshot, not a committed
+Last updated: 2026-10-21 (v0.9). This is a brainstorm snapshot, not a committed
 spec. Nothing in here has been implemented.
 
 ## 1. Core idea
@@ -141,6 +141,74 @@ Why Omarchy specifically:
   kept for the record, not because any of it is still the right way to
   do this on 4.5.0rc1 or later.
 
+- **Claude Code gets full, unrestricted, passwordless root — deliberate,
+  not a default left unexamined.** This is the direct consequence of
+  CC/OS's core thesis (§1): the AI is the primary operator of the
+  machine, not a human standing by to approve each privileged action.
+  A model where Claude Code has to request human confirmation for
+  system-level work — or only gets a narrow allowlist of pre-approved
+  commands — reintroduces exactly the human-in-the-loop bottleneck
+  CC/OS exists to remove, just relocated to the permission layer
+  instead of the command-shortcut layer. The standard "least privilege,
+  human approves anything irreversible" model is Omarchy's own
+  philosophy for *its* agent integration (see
+  `default/agents/skills/omarchy/SKILL.md`'s Privilege Escalation
+  section: `sudo` when a terminal is visible for a password prompt,
+  `pkexec` otherwise) — a reasonable choice for an OS built around a
+  human operator who occasionally delegates to an agent, but not the
+  choice CC/OS is making, since CC/OS inverts who the primary operator
+  is.
+
+  **`custom_commands` turned out not to work — Omarchy's orchestrator
+  never reads it.** The field is real and documented upstream in
+  archinstall, but `omarchy-iso`'s orchestrator
+  (`configs/airootfs/usr/share/omarchy-iso/orchestrator/*.py`)
+  completely reimplements the install flow on top of archinstall's
+  low-level primitives and never calls the upstream entrypoint that
+  processes `custom_commands` — confirmed by grepping the orchestrator
+  source for zero hits. The cidata answer file's top-level `"packages"`
+  array has the same problem: nothing reads it either. Both looked like
+  the obvious, no-fork way to do this and both are silently inert.
+
+  **What actually works: a standalone Arch package
+  (`cc-os-sudo-setup`), built outside both `basecamp/omarchy` and
+  `omarchy-pkgs`, injected into the ISO build through a local pacman
+  repo.** It ships a oneshot systemd service
+  (`cc-os-wheel-nopasswd.service`) that unconditionally writes
+  `/etc/sudoers.d/01-cc-os-wheel-nopasswd`
+  (`%wheel ALL=(ALL:ALL) NOPASSWD: ALL`, staged and `visudo -cf`
+  syntax-checked before install) at every boot, guarded idempotent via
+  `ConditionPathExists=!/etc/sudoers.d/01-cc-os-wheel-nopasswd`. Works
+  with `defer_provisioning: true` the same way the `custom_commands`
+  approach would have, since the rule targets the `wheel` *group* and
+  the service just runs again (harmlessly) after the deferred
+  first-boot account creation puts the new user in `wheel` — Omarchy's
+  own default there is `/etc/sudoers.d/00-omarchy-wheel`
+  (`%wheel ALL=(ALL:ALL) ALL`, password required); `sudoers.d` applies
+  in filename order so `01-...` wins.
+
+  Getting the package to actually land on the target system took two
+  more wrong turns, both now fixed: the orchestrator only installs
+  packages listed in a static file baked into the ISO at build time
+  (`omarchy-base.packages`) — a near-identical-looking
+  `omarchy-other.packages` file sits right next to it and is never
+  read by anything, a dead end that looked like the right answer; and
+  a `post_install()` function written directly in the package's
+  PKGBUILD is build-time-only and never runs as a pacman install hook
+  unless wired through a separate `.install` file, so the
+  systemd-enable step silently never fired — fixed by shipping the
+  `multi-user.target.wants` enable symlink directly in the package
+  instead of relying on any install-time scriptlet. Full build recipe
+  and every pitfall hit along the way (IFS/`read` bug in the
+  autoinstall disk-detection script, the stale `--keep-pkg-cache`
+  trap, needing `--rc` to get an `omarchy` package new enough to have
+  the Pinyin feature from §3) is in personal memory
+  `reference-omarchy-custom-iso-build-recipe.md`.
+
+  **Verified end-to-end in a real VM install (2026-10-21, no external
+  USB, full disk, UEFI)**: `sudo -n whoami` returns `root` with zero
+  password prompt on first login.
+
 ## 4. First-run setup: guided sign-in, not a custom login screen
 
 Dropped the earlier idea of replacing the OS login screen itself with
@@ -160,8 +228,7 @@ Code pre-installed — with sudo"): dropping the custom OAuth-login-screen
 idea doesn't mean dropping sudo access for Claude Code. Claude Code
 still comes pre-installed with sudo on the normal local account — what
 got dropped was *tying that to a custom login flow*, not the
-permission itself. Exact mechanism (sudoers entry, passwordless or
-not, scoped how) is still open — see §6.
+permission itself. Exact mechanism is decided — see §3.
 
 ## 5. Naming
 
@@ -195,10 +262,6 @@ not, scoped how) is still open — see §6.
   ones need an actual persistent backend/data store behind the skill
   (e.g. calendar needs real stored events, not just a stateless
   calculation) — not worked out yet.
-- Exact mechanism for Claude Code's sudo access (full passwordless
-  sudoers entry vs. a scoped/allowlisted set of commands vs.
-  confirmation-gated) — the tagline commits to "pre-installed with
-  sudo," the implementation of that is still open.
 - Which database for the Excel replacement (SQLite as a per-user local
   default is the obvious first guess, not decided) and what, if
   anything, provides a human-friendly grid view on top of it for

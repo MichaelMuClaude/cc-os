@@ -7,6 +7,19 @@ install against `omarchy-4.5.0rc1.iso` on 2026-10-21. See `PLAN.md`
 section 3 ("Chinese input preconfigured out of the box") for the full
 writeup of what this does and why it works.
 
+Passwordless `sudo` for Claude Code is **not** done via this template —
+an earlier draft here tried archinstall's `custom_commands` field, but
+Omarchy's orchestrator never reads it (confirmed by reading the
+orchestrator source directly; same dead end as the cidata JSON's
+top-level `"packages"` array, which is equally inert). The approach
+that actually works is a standalone Arch package built outside
+`basecamp/omarchy` and injected through a local pacman repo at
+ISO-build time — see the "Claude Code gets full, unrestricted,
+passwordless root" entry in `PLAN.md` section 3, and personal memory
+`reference-omarchy-custom-iso-build-recipe.md` for the full recipe.
+That requires a custom ISO build, so it isn't something this
+plain-cidata-against-the-stock-ISO template can carry.
+
 `cidata` is the standard cloud-init `NoCloud` convention — Omarchy's
 own installer supports it natively, no patching required. Full
 reference: [omarchy.org/manual/unattended-installs](https://omarchy.org/manual/unattended-installs/).

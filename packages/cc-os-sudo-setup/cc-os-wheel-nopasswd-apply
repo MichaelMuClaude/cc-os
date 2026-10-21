@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# CC/OS: grants the wheel group passwordless sudo, once, at boot. Writes
+# nothing if the rule already exists (also covered by the systemd unit's
+# ConditionPathExists, this is a second, cheap guard against ever writing
+# twice). Staged and syntax-checked with visudo before being installed, the
+# same pattern Omarchy's own sudoers-writing tools use, so a malformed write
+# can never reach a live sudoers.d file.
+set -euo pipefail
+
+target=/etc/sudoers.d/01-cc-os-wheel-nopasswd
+[[ -e $target ]] && exit 0
+
+staged=$(mktemp)
+trap 'rm -f "$staged"' EXIT
+
+printf '%%wheel ALL=(ALL:ALL) NOPASSWD: ALL\n' > "$staged"
+
+if ! visudo -cf "$staged" >/dev/null; then
+  echo "cc-os-wheel-nopasswd-apply: refusing invalid sudoers content" >&2
+  exit 1
+fi
+
+install -Dm440 -o root -g root "$staged" "$target"

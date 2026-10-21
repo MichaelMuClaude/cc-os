@@ -1,0 +1,12 @@
+[Unit]
+Description=CC/OS: grant the wheel group passwordless sudo (one-time)
+ConditionPathExists=!/etc/sudoers.d/01-cc-os-wheel-nopasswd
+After=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/cc-os/cc-os-wheel-nopasswd-apply
+
+[Install]
+WantedBy=multi-user.target

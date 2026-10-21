@@ -1,6 +1,6 @@
 # CC/OS — Plan (v0.1, discussion draft)
 
-Last updated: 2026-10-21 (v0.5). This is a brainstorm snapshot, not a committed
+Last updated: 2026-10-21 (v0.6). This is a brainstorm snapshot, not a committed
 spec. Nothing in here has been implemented.
 
 ## 1. Core idea
@@ -51,6 +51,23 @@ Why Omarchy specifically:
   on the thesis that Claude's own growing capabilities (browser
   automation, document handling, etc.) keep absorbing what those apps
   used to be needed for.
+- **Office suite replaced by the formats Claude already works in
+  natively**, not a bundled Office/LibreOffice-alike:
+  - **Word → Markdown.** Documents are plain `.md` files Claude reads
+    and writes directly, not a binary format requiring a dedicated
+    editor.
+  - **Excel → a database.** Structured/tabular data lives in an actual
+    database (schema, queries) that Claude operates on directly,
+    instead of a spreadsheet GUI as the interface to the data.
+  - **PowerPoint → HTML.** Presentations/visual decks are HTML (and
+    this repo's own early planning already leans this way — Claude's
+    Artifact tooling already produces HTML decks/pages as its default
+    output for this kind of thing).
+  Rendering/viewing these still needs something — e.g. the minimal
+  browser already in the fallback app set can render the Markdown/
+  HTML, and a thin UI can sit on top of the database for human
+  browsing — but authoring and editing routes through Claude, not a
+  dedicated Office-style app.
 - **System apps wrapped as Claude skills, not standalone GUI apps**:
   calculator, calendar, and similar everyday system utilities aren't
   shipped as separate apps a person opens — they're wrapped as skills
@@ -125,6 +142,10 @@ not, scoped how) is still open — see §6.
   sudoers entry vs. a scoped/allowlisted set of commands vs.
   confirmation-gated) — the tagline commits to "pre-installed with
   sudo," the implementation of that is still open.
+- Which database for the Excel replacement (SQLite as a per-user local
+  default is the obvious first guess, not decided) and what, if
+  anything, provides a human-friendly grid view on top of it for
+  someone who still wants to eyeball a table.
 - How the Claude hotkey actually surfaces Claude when summoned — an
   overlay window, a dropdown terminal, focus-switch to an
   always-running instance — not decided. Hyprland has the low-level

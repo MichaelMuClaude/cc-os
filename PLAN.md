@@ -1,6 +1,6 @@
 # CC/OS — Plan (v0.1, discussion draft)
 
-Last updated: 2026-10-21 (v0.6). This is a brainstorm snapshot, not a committed
+Last updated: 2026-10-21 (v0.7). This is a brainstorm snapshot, not a committed
 spec. Nothing in here has been implemented.
 
 ## 1. Core idea
@@ -78,11 +78,52 @@ Why Omarchy specifically:
   it, not a replacement for having the data at all.
 - **Chinese input preconfigured out of the box**: Fcitx5 + Pinyin,
   so a Chinese-speaking user doesn't have to configure it themselves
-  after install. (Known Hyprland/Omarchy-specific gotcha already found
-  during research: the system deliberately removes `Ctrl+Space` as the
-  fcitx5 trigger key — the real toggle is `Super+I`. See personal
-  memory `pattern-fcitx5-pinyin-hyprland-omarchy-setup.md` for the full
-  writeup if this needs doing for real.)
+  after install. Verified end-to-end on real Omarchy 4.0.6 VMs
+  (multiple independent fresh installs, CLI-only, no GUI tool
+  involved) — superseding an earlier, wrong note here: `Ctrl+Space` **is**
+  the real, working fcitx5 trigger key on the actual shipped ISO (a
+  claim that `Super+I` is the toggle instead turned out to describe an
+  unreleased future branch's docs, not shipped behavior — confirmed via
+  `hyprctl binds` on a real install, where plain `Super+I` has no
+  binding at all). Provisioning plan for CC/OS's install pipeline,
+  once the Omarchy fork exists:
+  - Add `fcitx5-chinese-addons` to the base package list (the Pinyin
+    engine ships inside this one meta-package; no separate
+    `fcitx5-pinyin` package exists).
+  - During user provisioning — before first login, i.e. before fcitx5
+    has ever started for that user — write `~/.config/fcitx5/profile`
+    directly with Pinyin already in the input-method group (template
+    below). Doing this pre-first-boot sidesteps the one real gotcha
+    found during testing: fcitx5 caches its input-method list in
+    memory once running, and neither editing the profile file nor
+    fcitx5's own `fcitx5-remote -r` reload command refreshes a
+    *running* daemon — only a fresh process start does. Writing the
+    file before fcitx5 ever launches means first boot just reads it
+    correctly, no restart dance needed.
+  - In the input-method list, select/write the engine literally named
+    `pinyin` — not the look-alike `keyboard-cn-altgr-pinyin`-style XKB
+    keyboard-layout entries that also show up with "Pinyin" in the
+    name but are a dumb key-remap, not the real phonetic engine.
+  ```ini
+  [Groups/0]
+  Name=Default
+  Default Layout=us
+  DefaultIM=pinyin
+
+  [Groups/0/Items/0]
+  Name=keyboard-us
+  Layout=
+
+  [Groups/0/Items/1]
+  Name=pinyin
+  Layout=
+
+  [GroupOrder]
+  0=Default
+  ```
+  Full investigation, including the GUI-vs-CLI debugging trail and why
+  the earlier note here was wrong, is in personal memory
+  `pattern-fcitx5-pinyin-hyprland-omarchy-setup.md`.
 
 ## 4. First-run setup: guided sign-in, not a custom login screen
 

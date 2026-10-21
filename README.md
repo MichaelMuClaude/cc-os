@@ -1,5 +1,7 @@
 # CC/OS
 
+> **An OS with Claude Code pre-installed — with sudo.**
+
 **Status: brainstorm / discussion only — nothing here has been built yet.**
 
 CC/OS (Claude Code OS) is an idea for a minimal, Chromebook-like Linux

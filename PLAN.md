@@ -1,6 +1,6 @@
 # CC/OS — Plan (v0.1, discussion draft)
 
-Last updated: 2026-10-21 (v0.4). This is a brainstorm snapshot, not a committed
+Last updated: 2026-10-21 (v0.5). This is a brainstorm snapshot, not a committed
 spec. Nothing in here has been implemented.
 
 ## 1. Core idea
@@ -81,6 +81,14 @@ the **Claude Desktop app** and **Claude Code** themselves, so they land
 in a working, authenticated environment without having to know what
 either of those sign-in flows normally require.
 
+Note this is separate from the headline tagline ("an OS with Claude
+Code pre-installed — with sudo"): dropping the custom OAuth-login-screen
+idea doesn't mean dropping sudo access for Claude Code. Claude Code
+still comes pre-installed with sudo on the normal local account — what
+got dropped was *tying that to a custom login flow*, not the
+permission itself. Exact mechanism (sudoers entry, passwordless or
+not, scoped how) is still open — see §6.
+
 ## 5. Naming
 
 - Working name: **CC/OS** (Claude Code OS). Repo slug: `cc-os` (GitHub
@@ -113,6 +121,10 @@ either of those sign-in flows normally require.
   ones need an actual persistent backend/data store behind the skill
   (e.g. calendar needs real stored events, not just a stateless
   calculation) — not worked out yet.
+- Exact mechanism for Claude Code's sudo access (full passwordless
+  sudoers entry vs. a scoped/allowlisted set of commands vs.
+  confirmation-gated) — the tagline commits to "pre-installed with
+  sudo," the implementation of that is still open.
 - How the Claude hotkey actually surfaces Claude when summoned — an
   overlay window, a dropdown terminal, focus-switch to an
   always-running instance — not decided. Hyprland has the low-level

@@ -17,12 +17,21 @@ if [[ -z $addr ]]; then
   exit 0
 fi
 
+# "Visible" means Claude sits on the workspace that is showing, not that it has
+# focus: after it is hidden with nothing else open, focus stays on it anyway,
+# so a focus test would keep "hiding" it forever and it could never come back.
 active=$(hyprctl activewindow -j | jq -r '.address // ""')
-if [[ $addr == "$active" && ${1:-} == "--show" ]]; then
-  fullscreen "$addr"
-elif [[ $addr == "$active" ]]; then
-  hd "hl.dsp.window.fullscreen({ mode = \"fullscreen\", action = \"unset\", window = \"address:$addr\" })"
-  hd "hl.dsp.window.move({ workspace = \"special:claude\", follow = false, window = \"address:$addr\" })"
+aws=$(hyprctl activeworkspace -j | jq -r '.name')
+cws=$(hyprctl clients -j | jq -r --arg a "$addr" '.[] | select(.address == $a) | .workspace.name')
+
+if [[ $cws == "$aws" ]]; then
+  if [[ $addr == "$active" && ${1:-} != "--show" ]]; then
+    hd "hl.dsp.window.fullscreen({ mode = \"fullscreen\", action = \"unset\", window = \"address:$addr\" })"
+    hd "hl.dsp.window.move({ workspace = \"special:claude\", follow = false, window = \"address:$addr\" })"
+  else
+    hd "hl.dsp.focus({ window = \"address:$addr\" })"
+    fullscreen "$addr"
+  fi
 else
   ws=$(hyprctl activeworkspace -j | jq -r '.id')
   hd "hl.dsp.window.move({ workspace = \"$ws\", follow = true, window = \"address:$addr\" })"

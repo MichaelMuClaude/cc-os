@@ -13,6 +13,22 @@ o.rebind("SUPER + S", "Claude", "/usr/lib/cc-os/cc-os-claude-toggle")
 LUA
   changed=1
 fi
+if ! grep -q "cc-os-app-toggle" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS personal bindings. Super+B / Super+T show and hide the browser and a
+-- dedicated terminal instead of opening a new window every time.
+hl.unbind("SUPER + SHIFT + B")
+o.rebind("SUPER + B", "Browser", "/usr/lib/cc-os/cc-os-app-toggle browser microsoft-edge omarchy-launch-browser")
+o.rebind("SUPER + T", "Terminal", "/usr/lib/cc-os/cc-os-app-toggle terminal cc-os.terminal xdg-terminal-exec --app-id=cc-os.terminal")
+-- The floating/tiling toggle that used to be on Super+T.
+o.bind("SUPER + ALT + T", "Toggle window floating/tiling", hl.dsp.window.float({ action = "toggle" }))
+-- Swapped: Super+F is "Full width", Super+Alt+F is "Full screen".
+o.rebind("SUPER + F", "Full width", hl.dsp.window.fullscreen({ mode = "maximized" }))
+o.rebind("SUPER + ALT + F", "Full screen", hl.dsp.window.fullscreen({ mode = "fullscreen" }))
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

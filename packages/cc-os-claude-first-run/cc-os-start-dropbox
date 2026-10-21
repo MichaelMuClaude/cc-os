@@ -13,10 +13,10 @@ for _ in $(seq 1 30); do
   url=$(grep -o 'https://www.dropbox.com/cli_link_nonce?nonce=[0-9a-f]*' "$log" | tail -1)
   if [[ -n $url ]]; then
     setsid xdg-open "$url" >/dev/null 2>&1 </dev/null &
-    # Claude opens full screen right after this and covers the browser, so say
+    # Claude opens wide right after this and covers the browser, so say
     # where the sign-in page went. Clicking the notification reopens it.
     omarchy-notification-send -u critical "Sign in to Dropbox" \
-      "The sign-in page is open in your browser. Claude is full screen: press Super+S to hide it." \
+      "The sign-in page is open in your browser. Claude fills the screen: press Super+S to hide it." \
       --exec setsid xdg-open "$url" >/dev/null 2>&1 || true
     break
   fi

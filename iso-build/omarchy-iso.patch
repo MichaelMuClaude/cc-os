@@ -46,10 +46,10 @@ index e6d2431..aa7a0d1 100755
  
 diff --git a/configs/airootfs/usr/local/bin/cc-os-prepare-autoinstall b/configs/airootfs/usr/local/bin/cc-os-prepare-autoinstall
 new file mode 100755
-index 0000000..f478529
+index 0000000..a07919b
 --- /dev/null
 +++ b/configs/airootfs/usr/local/bin/cc-os-prepare-autoinstall
-@@ -0,0 +1,78 @@
+@@ -0,0 +1,85 @@
 +#!/bin/bash
 +#
 +# CC/OS: renders the baked-in cidata template (install/usr/local/share/cc-os/
@@ -104,12 +104,18 @@ index 0000000..f478529
 +disk_bytes=$(lsblk -bndo SIZE "$disk_path" 2>/dev/null)
 +[[ $disk_bytes =~ ^[0-9]+$ ]] || exit 1
 +
++sector_size=$(lsblk -ndo LOG-SEC "$disk_path" 2>/dev/null | tr -d ' ')
++[[ $sector_size =~ ^[0-9]+$ ]] || exit 1
++
 +mib=$((1024 * 1024))
 +gib=$((1024 * 1024 * 1024))
 +boot_start=$mib
 +boot_size=$((2 * gib))
 +main_start=$((boot_start + boot_size))
-+main_size=$((disk_bytes - main_start - mib))
++# archinstall rejects any partition whose length isn't a whole MiB, and real
++# disks are almost never a whole number of MiB, so round down — this also
++# keeps the end clear of the 1MiB backup GPT reserve archinstall checks for.
++main_size=$(( (disk_bytes - main_start - mib) / mib * mib ))
 +
 +# A disk smaller than ~3GiB (boot + reserve) cannot hold this layout; refuse
 +# rather than write a config that will fail partitioning.
@@ -121,6 +127,7 @@ index 0000000..f478529
 +  -e "s|__CC_OS_BOOT_SIZE__|$boot_size|g" \
 +  -e "s|__CC_OS_MAIN_START__|$main_start|g" \
 +  -e "s|__CC_OS_MAIN_SIZE__|$main_size|g" \
++  -e "s|__CC_OS_SECTOR_SIZE__|$sector_size|g" \
 +  "$template")
 +
 +mkdir -p "$dest"
@@ -151,7 +158,7 @@ index 6578849..c988d84 100755
  # racing it and silently dropping a headless install into the wizard.
 diff --git a/configs/airootfs/usr/local/share/cc-os/cidata/user_configuration.json.template b/configs/airootfs/usr/local/share/cc-os/cidata/user_configuration.json.template
 new file mode 100644
-index 0000000..0be38e8
+index 0000000..6ad3a52
 --- /dev/null
 +++ b/configs/airootfs/usr/local/share/cc-os/cidata/user_configuration.json.template
 @@ -0,0 +1,92 @@
@@ -189,8 +196,8 @@ index 0000000..0be38e8
 +                        "mount_options": [],
 +                        "mountpoint": "/boot",
 +                        "obj_id": "ea21d3f2-82bb-49cc-ab5d-6f81ae94e18d",
-+                        "size": { "sector_size": { "unit": "B", "value": 512 }, "unit": "B", "value": __CC_OS_BOOT_SIZE__ },
-+                        "start": { "sector_size": { "unit": "B", "value": 512 }, "unit": "B", "value": __CC_OS_BOOT_START__ },
++                        "size": { "sector_size": { "unit": "B", "value": __CC_OS_SECTOR_SIZE__ }, "unit": "B", "value": __CC_OS_BOOT_SIZE__ },
++                        "start": { "sector_size": { "unit": "B", "value": __CC_OS_SECTOR_SIZE__ }, "unit": "B", "value": __CC_OS_BOOT_START__ },
 +                        "status": "create",
 +                        "type": "primary"
 +                    },
@@ -207,8 +214,8 @@ index 0000000..0be38e8
 +                        "mount_options": [ "compress=zstd" ],
 +                        "mountpoint": null,
 +                        "obj_id": "8c2c2b92-1070-455d-b76a-56263bab24aa",
-+                        "size": { "sector_size": { "unit": "B", "value": 512 }, "unit": "B", "value": __CC_OS_MAIN_SIZE__ },
-+                        "start": { "sector_size": { "unit": "B", "value": 512 }, "unit": "B", "value": __CC_OS_MAIN_START__ },
++                        "size": { "sector_size": { "unit": "B", "value": __CC_OS_SECTOR_SIZE__ }, "unit": "B", "value": __CC_OS_MAIN_SIZE__ },
++                        "start": { "sector_size": { "unit": "B", "value": __CC_OS_SECTOR_SIZE__ }, "unit": "B", "value": __CC_OS_MAIN_START__ },
 +                        "status": "create",
 +                        "type": "primary"
 +                    }

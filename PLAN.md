@@ -1,6 +1,6 @@
 # CC/OS — Plan (v0.1, discussion draft)
 
-Last updated: 2026-10-21 (v0.2). This is a brainstorm snapshot, not a committed
+Last updated: 2026-10-21 (v0.3). This is a brainstorm snapshot, not a committed
 spec. Nothing in here has been implemented.
 
 ## 1. Core idea
@@ -43,6 +43,14 @@ Why Omarchy specifically:
   on the thesis that Claude's own growing capabilities (browser
   automation, document handling, etc.) keep absorbing what those apps
   used to be needed for.
+- **System apps wrapped as Claude skills, not standalone GUI apps**:
+  calculator, calendar, and similar everyday system utilities aren't
+  shipped as separate apps a person opens — they're wrapped as skills
+  Claude can call, so "do the math" or "what's on my calendar" is just
+  a request to Claude, not a context switch to another window. The
+  underlying functionality (and its data, e.g. calendar events) still
+  needs to live somewhere on the system; the skill is the interface to
+  it, not a replacement for having the data at all.
 - **Chinese input preconfigured out of the box**: Fcitx5 + Pinyin,
   so a Chinese-speaking user doesn't have to configure it themselves
   after install. (Known Hyprland/Omarchy-specific gotcha already found
@@ -93,6 +101,10 @@ either of those sign-in flows normally require.
   independently re-litigated against e.g. an Ubuntu/Debian base.
 - Exact minimal app set to keep (terminal, file manager, minimal
   browser was the first pass — not finalized).
+- Which system utilities get the skill-wrapper treatment and which
+  ones need an actual persistent backend/data store behind the skill
+  (e.g. calendar needs real stored events, not just a stateless
+  calculation) — not worked out yet.
 - Exact shape of the first-run guided sign-in (a GUI wizard vs. a
   terminal-based checklist vs. something embedded in the desktop
   shell) — not decided yet.

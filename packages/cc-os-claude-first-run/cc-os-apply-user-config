@@ -141,6 +141,18 @@ end
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Super+Tab switches windows" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+Tab switches windows like Alt+Tab (Super+Shift+Tab goes back),
+-- instead of switching workspaces.
+o.rebind("SUPER + TAB", "Focus on next window", hl.dsp.window.cycle_next())
+o.bind("SUPER + TAB", "Reveal active window on top", hl.dsp.window.bring_to_top())
+o.rebind("SUPER + SHIFT + TAB", "Focus on previous window", hl.dsp.window.cycle_next({ next = false }))
+o.bind("SUPER + SHIFT + TAB", "Reveal active window on top", hl.dsp.window.bring_to_top())
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

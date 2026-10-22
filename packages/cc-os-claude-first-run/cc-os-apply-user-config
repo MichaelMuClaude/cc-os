@@ -23,9 +23,6 @@ o.rebind("SUPER + B", "Browser", "/usr/lib/cc-os/cc-os-app-toggle browser micros
 o.rebind("SUPER + T", "Terminal", "/usr/lib/cc-os/cc-os-app-toggle terminal cc-os.terminal xdg-terminal-exec --app-id=cc-os.terminal")
 -- The floating/tiling toggle that used to be on Super+T.
 o.bind("SUPER + ALT + T", "Toggle window floating/tiling", hl.dsp.window.float({ action = "toggle" }))
--- Swapped: Super+F is "Full width", Super+Alt+F is "Full screen".
-o.rebind("SUPER + F", "Full width", hl.dsp.window.fullscreen({ mode = "maximized" }))
-o.rebind("SUPER + ALT + F", "Full screen", hl.dsp.window.fullscreen({ mode = "fullscreen" }))
 LUA
   changed=1
 fi
@@ -86,6 +83,15 @@ if ! grep -q "CC/OS: no Super+Return" "$hypr/bindings.lua" 2>/dev/null; then
 -- CC/OS: no Super+Return / Super+Shift+Return; terminal and browser are on Super+T / Super+B.
 hl.unbind("SUPER + RETURN")
 hl.unbind("SUPER + SHIFT + RETURN")
+LUA
+  changed=1
+fi
+if ! grep -q "CC/OS: Super+F full screen" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+F full screen; no Super+Alt+F (Super+O widens the focused window).
+o.rebind("SUPER + F", "Full screen", hl.dsp.window.fullscreen({ mode = "fullscreen" }))
+hl.unbind("SUPER + ALT + F")
 LUA
   changed=1
 fi

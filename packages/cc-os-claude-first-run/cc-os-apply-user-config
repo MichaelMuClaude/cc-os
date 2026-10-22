@@ -220,6 +220,15 @@ hl.unbind("SUPER + grave")
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: no move-to-console keys" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: no move-to-console keys (Super+Alt+S, Super+Shift+grave).
+hl.unbind("SUPER + ALT + S")
+hl.unbind("SUPER + SHIFT + grave")
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

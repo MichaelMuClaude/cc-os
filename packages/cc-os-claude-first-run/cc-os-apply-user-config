@@ -167,6 +167,17 @@ hl.unbind("SUPER + SHIFT + TAB")
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Super+Space switches input" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+Space switches input language (was Super+I); the Omarchy menu
+-- loses Super+Space.
+hl.unbind("SUPER + I")
+hl.unbind("SUPER + SHIFT + I")
+o.rebind("SUPER + SPACE", "Switch input language", "omarchy-input-method cycle")
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

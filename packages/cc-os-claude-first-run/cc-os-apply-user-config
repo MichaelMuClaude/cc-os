@@ -241,6 +241,17 @@ o.rebind("SUPER + T", "Terminal", "/usr/lib/cc-os/cc-os-app-toggle terminal cc-o
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Super+T drop-down terminal" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+T drop-down terminal, a plain shell in a panel like the Super+Space
+-- console. pcall keeps the rest of this file loading if the module ever fails.
+local ok, err = pcall(dofile, "/usr/lib/cc-os/cc-os-dropdown.lua")
+if not ok then print("cc-os-dropdown: " .. tostring(err)) end
+o.rebind("SUPER + T", "Terminal (drop-down)", hl.dsp.workspace.toggle_special("dropdown"))
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

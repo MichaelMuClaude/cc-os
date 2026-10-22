@@ -1,24 +1,25 @@
 #!/bin/bash
-# Keeps apps out of the Super+T console. Anything that opens inside it (say, an app
-# Claude Code launched from there), other than the console's own agent terminal,
-# is moved to the workspace underneath, the console is put away, and the app gets
-# focus. Runs for the whole session; started once by cc-os-session-start.
+# Keeps apps out of the drop-down panels: the Claude Code console (Super+Space)
+# and the drop-down terminal (Super+T). Anything that opens inside one of them (say,
+# an app launched from there), other than the panel's own terminal, is moved to the
+# workspace underneath, the panel is put away, and the app gets focus. Runs for the
+# whole session; started once by cc-os-session-start.
 exec 9>"${XDG_RUNTIME_DIR:-/tmp}/cc-os-console-watch.lock"
 flock -n 9 || exit 0
 
-console="special:scratchpad"
-agent_class="org.omarchy.agent"
+# Panel workspace -> the class of the terminal that belongs there.
+declare -A own=([special:scratchpad]=org.omarchy.agent [special:dropdown]=cc-os.dropdown)
 hd() { hyprctl dispatch "$1" >/dev/null 2>&1; }
 sock="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
 
-socat -U - UNIX-CONNECT:"$sock" | while IFS= read -r line; do
+socat -U - UNIX-CONNECT:"$sock" 9>&- | while IFS= read -r line; do
   [[ $line == openwindow\>\>* ]] || continue
   IFS=, read -r addr ws class _ <<<"${line#openwindow>>}"
-  [[ $ws == "$console" && $class != "$agent_class" ]] || continue
+  [[ -n ${own[$ws]:-} && $class != "${own[$ws]}" ]] || continue
   a="address:0x$addr"
-  mon=$(hyprctl monitors -j | jq -c 'first(.[] | select(.specialWorkspace.name == "special:scratchpad")) // first(.[] | select(.focused))')
+  mon=$(hyprctl monitors -j | jq -c --arg w "$ws" 'first(.[] | select(.specialWorkspace.name == $w)) // first(.[] | select(.focused))')
   target=$(jq -r '.activeWorkspace.id' <<<"$mon")
   hd "hl.dsp.window.move({ workspace = \"$target\", follow = false, window = \"$a\" })"
-  [[ $(jq -r '.specialWorkspace.name' <<<"$mon") == "$console" ]] && hd 'hl.dsp.workspace.toggle_special("scratchpad")'
+  [[ $(jq -r '.specialWorkspace.name' <<<"$mon") == "$ws" ]] && hd "hl.dsp.workspace.toggle_special(\"${ws#special:}\")"
   hd "hl.dsp.focus({ window = \"$a\" })"
 done

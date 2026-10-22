@@ -48,6 +48,14 @@ o.rebind("SUPER + O", "Tile all / widen focused", "/usr/lib/cc-os/cc-os-overview
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Super+E" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+E opens the file manager (same as Super+Shift+F).
+o.bind("SUPER + E", "File manager", { omarchy = "nautilus" })
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

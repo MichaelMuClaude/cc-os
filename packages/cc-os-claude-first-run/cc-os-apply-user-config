@@ -21,8 +21,6 @@ if ! grep -q "cc-os-app-toggle" "$hypr/bindings.lua" 2>/dev/null; then
 hl.unbind("SUPER + SHIFT + B")
 o.rebind("SUPER + B", "Browser", "/usr/lib/cc-os/cc-os-app-toggle browser microsoft-edge omarchy-launch-browser")
 o.rebind("SUPER + T", "Terminal", "/usr/lib/cc-os/cc-os-app-toggle terminal cc-os.terminal xdg-terminal-exec --app-id=cc-os.terminal")
--- The floating/tiling toggle that used to be on Super+T.
-o.bind("SUPER + ALT + T", "Toggle window floating/tiling", hl.dsp.window.float({ action = "toggle" }))
 LUA
   changed=1
 fi
@@ -39,8 +37,7 @@ if ! grep -q "cc-os-overview-toggle" "$hypr/bindings.lua" 2>/dev/null; then
   cat >>"$hypr/bindings.lua" <<'LUA'
 
 -- CC/OS: Super+O tiles every window (Claude included); press again to widen the
--- focused one. The old "Pop window out" moves to Super+Alt+O.
-o.bind("SUPER + ALT + O", "Pop window out (float & pin)", "omarchy-hyprland-window-pop")
+-- focused one.
 o.rebind("SUPER + O", "Tile all / widen focused", "/usr/lib/cc-os/cc-os-overview-toggle")
 LUA
   changed=1
@@ -92,6 +89,15 @@ if ! grep -q "CC/OS: Super+F full screen" "$hypr/bindings.lua" 2>/dev/null; then
 -- CC/OS: Super+F full screen; no Super+Alt+F (Super+O widens the focused window).
 o.rebind("SUPER + F", "Full screen", hl.dsp.window.fullscreen({ mode = "fullscreen" }))
 hl.unbind("SUPER + ALT + F")
+LUA
+  changed=1
+fi
+if ! grep -q "CC/OS: no floating keys" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: no floating keys; Super+O tiles everything instead.
+hl.unbind("SUPER + ALT + T")
+hl.unbind("SUPER + ALT + O")
 LUA
   changed=1
 fi

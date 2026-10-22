@@ -229,6 +229,18 @@ hl.unbind("SUPER + SHIFT + grave")
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Ctrl+Space switches input" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Ctrl+Space switches input language (replaces the tmux/Herdr prefix
+-- pass-through), Super+Space drops down the Claude Code console, and Super+T is back
+-- to showing / hiding a plain terminal.
+o.rebind("CTRL + SPACE", "Switch input language", "omarchy-input-method cycle")
+o.rebind("SUPER + SPACE", "Claude Code console", hl.dsp.workspace.toggle_special("scratchpad"))
+o.rebind("SUPER + T", "Terminal", "/usr/lib/cc-os/cc-os-app-toggle terminal cc-os.terminal xdg-terminal-exec --app-id=cc-os.terminal")
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

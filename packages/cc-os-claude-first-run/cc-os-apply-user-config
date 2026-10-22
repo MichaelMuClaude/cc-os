@@ -56,6 +56,14 @@ o.bind("SUPER + E", "File manager", { omarchy = "nautilus" })
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: no Super+Shift+F" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: no Super+Shift+F; the file manager is on Super+E.
+hl.unbind("SUPER + SHIFT + F")
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

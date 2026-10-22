@@ -64,6 +64,22 @@ hl.unbind("SUPER + SHIFT + F")
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: simple resize" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: simple resize. Super+= grows the focused window as a whole, Super+- shrinks
+-- it; Alt = a little, Ctrl = a lot. The per-edge Shift variants are removed.
+for _, keys in ipairs({ "SUPER + SHIFT", "SUPER + SHIFT + ALT", "SUPER + CTRL + SHIFT" }) do
+  hl.unbind(keys .. " + code:20")
+  hl.unbind(keys .. " + code:21")
+end
+for mod, step in pairs({ ["SUPER"] = 100, ["SUPER + ALT"] = 25, ["SUPER + CTRL"] = 300 }) do
+  o.rebind(mod .. " + code:21", "Grow window", hl.dsp.window.resize({ x = step, y = step, relative = true }))
+  o.rebind(mod .. " + code:20", "Shrink window", hl.dsp.window.resize({ x = -step, y = -step, relative = true }))
+end
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

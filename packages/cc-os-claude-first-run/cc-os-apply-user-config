@@ -212,6 +212,14 @@ o.rebind("SUPER + T", "Claude Code console", hl.dsp.workspace.toggle_special("sc
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: no Super+grave" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: no Super+grave; the console is on Super+T.
+hl.unbind("SUPER + grave")
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

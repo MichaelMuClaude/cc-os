@@ -144,21 +144,26 @@ fi
 if ! grep -q "CC/OS: Super+Tab switches windows" "$hypr/bindings.lua" 2>/dev/null; then
   cat >>"$hypr/bindings.lua" <<'LUA'
 
--- CC/OS: Super+Tab switches windows like Alt+Tab (Super+Shift+Tab goes back),
--- instead of switching workspaces.
+-- CC/OS: Super+Tab switches windows like Alt+Tab, instead of switching workspaces.
 o.rebind("SUPER + TAB", "Focus on next window", hl.dsp.window.cycle_next())
 o.bind("SUPER + TAB", "Reveal active window on top", hl.dsp.window.bring_to_top())
-o.rebind("SUPER + SHIFT + TAB", "Focus on previous window", hl.dsp.window.cycle_next({ next = false }))
-o.bind("SUPER + SHIFT + TAB", "Reveal active window on top", hl.dsp.window.bring_to_top())
 LUA
   changed=1
 fi
 if ! grep -q "CC/OS: Alt+Tab switches workspaces" "$hypr/bindings.lua" 2>/dev/null; then
   cat >>"$hypr/bindings.lua" <<'LUA'
 
--- CC/OS: Alt+Tab switches workspaces (Shift+Alt+Tab goes back); Super+Tab switches windows.
+-- CC/OS: Alt+Tab switches workspaces; Super+Tab switches windows.
 o.rebind("ALT + TAB", "Next workspace", hl.dsp.focus({ workspace = "m+1" }))
-o.rebind("ALT + SHIFT + TAB", "Previous workspace", hl.dsp.focus({ workspace = "m-1" }))
+LUA
+  changed=1
+fi
+if ! grep -q "CC/OS: no Shift+Tab variants" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: no Shift+Tab variants; Alt+Tab and Super+Tab only go forward.
+hl.unbind("ALT + SHIFT + TAB")
+hl.unbind("SUPER + SHIFT + TAB")
 LUA
   changed=1
 fi

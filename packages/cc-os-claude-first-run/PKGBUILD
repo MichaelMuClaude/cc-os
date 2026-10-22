@@ -1,6 +1,6 @@
 # Maintainer: CC/OS
 pkgname=cc-os-claude-first-run
-pkgver=1.4.10
+pkgver=1.4.11
 pkgrel=1
 pkgdesc="CC/OS: Claude Desktop as the main interface -- no AI chooser, Super+S/B/T show-hide toggles, Super+O tile-all/widen, Dropbox-synced memory, natural touchpad scrolling"
 arch=('any')

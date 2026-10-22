@@ -80,6 +80,15 @@ end
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: no Super+Return" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: no Super+Return / Super+Shift+Return; terminal and browser are on Super+T / Super+B.
+hl.unbind("SUPER + RETURN")
+hl.unbind("SUPER + SHIFT + RETURN")
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

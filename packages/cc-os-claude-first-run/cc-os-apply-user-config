@@ -186,6 +186,15 @@ o.rebind("SUPER + M", "Omarchy menu", { menu = "root" })
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Super+Return tiles all" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+Return tiles all / widens the focused window (moved from Super+O).
+hl.unbind("SUPER + O")
+o.rebind("SUPER + RETURN", "Tile all / widen focused", "/usr/lib/cc-os/cc-os-overview-toggle")
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

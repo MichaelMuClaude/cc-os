@@ -126,7 +126,7 @@ if ! grep -q "CC/OS: no widget shortcuts" "$hypr/bindings.lua" 2>/dev/null; then
   cat >>"$hypr/bindings.lua" <<'LUA'
 
 -- CC/OS: no widget shortcuts (notifications, reminders, clock, calendar, weather,
--- battery, activity, calculator); ask Claude instead. The calculator hardware key stays.
+-- battery, activity, calculator); ask Claude instead.
 for _, keys in ipairs({
   "SUPER + comma", "SUPER + SHIFT + comma", "SUPER + ALT + comma", "SUPER + SHIFT + ALT + comma",
   "SUPER + CTRL + comma",
@@ -249,6 +249,14 @@ if ! grep -q "CC/OS: Super+T drop-down terminal" "$hypr/bindings.lua" 2>/dev/nul
 local ok, err = pcall(dofile, "/usr/lib/cc-os/cc-os-dropdown.lua")
 if not ok then print("cc-os-dropdown: " .. tostring(err)) end
 o.rebind("SUPER + T", "Terminal (drop-down)", hl.dsp.workspace.toggle_special("dropdown"))
+LUA
+  changed=1
+fi
+if ! grep -q "CC/OS: no calculator key" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: no calculator key; Omacalc is not installed.
+hl.unbind("XF86Calculator")
 LUA
   changed=1
 fi

@@ -1,0 +1,25 @@
+#!/bin/bash
+# Super+O (CC/OS). If the focused window is maximized/full screen, or any window on this
+# workspace is floating, tile everything (pulling Claude in too). Otherwise
+# maximize the focused window to "full width".
+hd() { hyprctl dispatch "$1" >/dev/null 2>&1; }
+w() { echo "window = \"address:$1\""; }
+
+ws=$(hyprctl activeworkspace -j | jq -r '.id')
+active=$(hyprctl activewindow -j | jq -r '.address // ""')
+afs=$(hyprctl activewindow -j | jq -r '.fullscreen // 0')
+floating=$(hyprctl clients -j | jq -r --argjson ws "$ws" '[.[] | select(.workspace.id == $ws and .floating)] | length')
+
+if [[ $afs != 0 && $afs != false ]] || (( floating > 0 )); then
+  claude=$(hyprctl clients -j | jq -r 'first(.[] | select(.class == "com.anthropic.Claude") | .address) // empty')
+  [[ -n $claude ]] && hd "hl.dsp.window.move({ workspace = \"$ws\", follow = false, $(w "$claude") })"
+  hyprctl clients -j | jq -r --argjson ws "$ws" '.[] | select(.workspace.id == $ws) | .address' | while read -r a; do
+    hd "hl.dsp.window.fullscreen({ mode = \"maximized\", action = \"unset\", $(w "$a") })"
+    hd "hl.dsp.window.fullscreen({ mode = \"fullscreen\", action = \"unset\", $(w "$a") })"
+    hd "hl.dsp.window.pin({ action = \"disable\", $(w "$a") })"
+    hd "hl.dsp.window.float({ action = \"disable\", $(w "$a") })"
+  done
+  [[ -n $active ]] && hd "hl.dsp.focus({ $(w "$active") })"
+else
+  [[ -n $active ]] && hd "hl.dsp.window.fullscreen({ mode = \"maximized\", action = \"set\", $(w "$active") })"
+fi

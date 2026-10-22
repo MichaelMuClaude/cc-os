@@ -29,6 +29,25 @@ o.rebind("SUPER + ALT + F", "Full screen", hl.dsp.window.fullscreen({ mode = "fu
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Super+L locks" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+L locks the screen (moved from Super+Ctrl+L).
+hl.unbind("SUPER + CTRL + L")
+o.rebind("SUPER + L", "Lock system", "omarchy-system-lock")
+LUA
+  changed=1
+fi
+if ! grep -q "cc-os-overview-toggle" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+O tiles every window (Claude included); press again to widen the
+-- focused one. The old "Pop window out" moves to Super+Alt+O.
+o.bind("SUPER + ALT + O", "Pop window out (float & pin)", "omarchy-hyprland-window-pop")
+o.rebind("SUPER + O", "Tile all / widen focused", "/usr/lib/cc-os/cc-os-overview-toggle")
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

@@ -203,6 +203,15 @@ o.rebind("SUPER + O", "Apps", "omarchy-shell omarchy.dock apps")
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Super+T drops down the console" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+T drops down Omarchy's console (the scratchpad), which opens Claude Code
+-- the first time; press again to put it away.
+o.rebind("SUPER + T", "Claude Code console", hl.dsp.workspace.toggle_special("scratchpad"))
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

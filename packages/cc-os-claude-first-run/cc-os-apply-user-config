@@ -101,6 +101,46 @@ hl.unbind("SUPER + ALT + O")
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: no app shortcuts" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: no app shortcuts for Omarchy's preinstalled apps and web apps; ask Claude
+-- instead.
+for _, keys in ipairs({
+  "SUPER + SHIFT + A", "SUPER + SHIFT + ALT + A", "SUPER + SHIFT + CTRL + A",
+  "SUPER + SHIFT + E", "SUPER + SHIFT + ALT + E", "SUPER + SHIFT + C",
+  "SUPER + SHIFT + G", "SUPER + SHIFT + ALT + G", "SUPER + SHIFT + CTRL + G",
+  "SUPER + SHIFT + M", "SUPER + SHIFT + ALT + M", "SUPER + SHIFT + D",
+  "SUPER + SHIFT + N", "SUPER + SHIFT + O", "SUPER + SHIFT + W",
+  "SUPER + SHIFT + P", "SUPER + SHIFT + Y", "SUPER + SHIFT + X", "SUPER + SHIFT + ALT + X",
+  "SUPER + SHIFT + ALT + S", "SUPER + SHIFT + SLASH",
+  "SUPER + SHIFT + ALT + B", "SUPER + ALT + SHIFT + F",
+  "SUPER + ALT + RETURN", "SUPER + CTRL + RETURN", "SUPER + ALT + K", "SUPER + CTRL + K",
+}) do
+  hl.unbind(keys)
+end
+LUA
+  changed=1
+fi
+if ! grep -q "CC/OS: no widget shortcuts" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: no widget shortcuts (notifications, reminders, clock, calendar, weather,
+-- battery, activity, calculator); ask Claude instead. The calculator hardware key stays.
+for _, keys in ipairs({
+  "SUPER + comma", "SUPER + SHIFT + comma", "SUPER + ALT + comma", "SUPER + SHIFT + ALT + comma",
+  "SUPER + CTRL + comma",
+  "SUPER + CTRL + R", "SUPER + CTRL + ALT + R", "SUPER + SHIFT + CTRL + R",
+  "SUPER + CTRL + ALT + T", "SUPER + CTRL + ALT + E", "SUPER + CTRL + ALT + D",
+  "SUPER + CTRL + ALT + W", "SUPER + CTRL + ALT + B",
+  "SUPER + CTRL + Q", "SUPER + CTRL + T",
+  "SUPER + ALT + SHIFT + F",
+}) do
+  hl.unbind(keys)
+end
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

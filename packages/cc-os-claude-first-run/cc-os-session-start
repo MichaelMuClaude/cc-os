@@ -2,6 +2,7 @@
 # Every graphical login: apply personal config, open Claude Desktop as the
 # main interface, and finish any first-run setup that is still pending.
 /usr/lib/cc-os/cc-os-apply-user-config
+setsid /usr/lib/cc-os/cc-os-console-watch >/dev/null 2>&1 </dev/null &
 if ! pacman -Q claude-desktop >/dev/null 2>&1; then
   setsid omarchy-launch-floating-terminal-with-presentation /usr/lib/cc-os/cc-os-install-apps &
 else

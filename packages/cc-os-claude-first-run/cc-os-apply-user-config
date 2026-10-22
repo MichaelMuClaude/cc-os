@@ -178,6 +178,14 @@ o.rebind("SUPER + SPACE", "Switch input language", "omarchy-input-method cycle")
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Super+M opens the Omarchy menu" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+M opens the Omarchy menu (replaces "Minimize window to the dock").
+o.rebind("SUPER + M", "Omarchy menu", { menu = "root" })
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

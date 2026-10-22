@@ -153,6 +153,15 @@ o.bind("SUPER + SHIFT + TAB", "Reveal active window on top", hl.dsp.window.bring
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Alt+Tab switches workspaces" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Alt+Tab switches workspaces (Shift+Alt+Tab goes back); Super+Tab switches windows.
+o.rebind("ALT + TAB", "Next workspace", hl.dsp.focus({ workspace = "m+1" }))
+o.rebind("ALT + SHIFT + TAB", "Previous workspace", hl.dsp.focus({ workspace = "m-1" }))
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

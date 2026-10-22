@@ -195,6 +195,14 @@ o.rebind("SUPER + RETURN", "Tile all / widen focused", "/usr/lib/cc-os/cc-os-ove
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Super+O opens apps" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+O opens the app list (same as Super+Alt+Space).
+o.rebind("SUPER + O", "Apps", "omarchy-shell omarchy.dock apps")
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

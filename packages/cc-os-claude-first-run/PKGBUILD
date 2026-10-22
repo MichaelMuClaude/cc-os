@@ -1,18 +1,18 @@
 # Maintainer: CC/OS
 pkgname=cc-os-claude-first-run
-pkgver=1.4.24
+pkgver=1.4.25
 pkgrel=1
 pkgdesc="CC/OS: Claude Desktop as the main interface -- Claude Code as the default agent, a minimal set of Claude-first shortcuts, Dropbox-synced memory, natural touchpad scrolling"
 arch=('any')
 license=('MIT')
 depends=('networkmanager' 'sudo' 'jq' 'socat' 'util-linux' 'xdg-utils')
-source=('default-agent' 'cc-os-claude-toggle' 'cc-os-app-toggle' 'cc-os-overview-toggle' 'cc-os-console-watch' 'cc-os-dropdown.lua' 'cc-os-apply-user-config' 'cc-os-install-apps'
+source=('default-agent' 'cc-os-claude-toggle' 'cc-os-app-toggle' 'cc-os-overview-toggle' 'cc-os-console-watch' 'cc-os-trim-apps' 'cc-os-dropdown.lua' 'cc-os-apply-user-config' 'cc-os-install-apps'
         'cc-os-install-dropbox' 'cc-os-dropbox-status' 'cc-os-start-dropbox' 'cc-os-link-memory' 'cc-os-session-start' 'cc-os-session.desktop')
-sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
 
 package() {
   install -Dm644 default-agent "$pkgdir/etc/skel/.config/omarchy/defaults/agent"
-  for f in cc-os-claude-toggle cc-os-app-toggle cc-os-overview-toggle cc-os-console-watch cc-os-apply-user-config cc-os-install-apps cc-os-install-dropbox cc-os-dropbox-status cc-os-start-dropbox cc-os-link-memory cc-os-session-start; do
+  for f in cc-os-claude-toggle cc-os-app-toggle cc-os-overview-toggle cc-os-console-watch cc-os-trim-apps cc-os-apply-user-config cc-os-install-apps cc-os-install-dropbox cc-os-dropbox-status cc-os-start-dropbox cc-os-link-memory cc-os-session-start; do
     install -Dm755 "$f" "$pkgdir/usr/lib/cc-os/$f"
   done
   install -Dm644 cc-os-dropdown.lua "$pkgdir/usr/lib/cc-os/cc-os-dropdown.lua"

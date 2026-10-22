@@ -18,8 +18,8 @@ not a spec.
 - [`packages/cc-os-claude-first-run`](packages/cc-os-claude-first-run/):
   makes Claude the main interface. It sets Claude Code as the default agent,
   opens Claude Desktop at login, installs the CC/OS keyboard shortcuts below,
-  syncs Claude's memory through Dropbox, and turns on natural touchpad
-  scrolling.
+  syncs Claude's memory through Dropbox, trims Omarchy's preinstalled apps
+  and web apps down to a small set, and turns on natural touchpad scrolling.
 - [`packages/cc-os-sudo-setup`](packages/cc-os-sudo-setup/): passwordless
   `sudo` for the `wheel` group, so Claude Code can operate the machine
   without a password prompt for every command.

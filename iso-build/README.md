@@ -12,6 +12,10 @@ with no external USB drive and no fork of `basecamp/omarchy`:
   to whole MiB and the real logical sector size is read from the
   disk, since archinstall rejects anything else on real hardware.
 - preconfigures Chinese Pinyin input (`omarchy_install.input_method`)
+- leaves 16 Omarchy apps CC/OS does without out of the install list
+  (LibreOffice, Evince, Pinta, Aether, Hype, Omawrite, Obsidian,
+  Monologue, Omacut, Omacalc, Signed, Disktree, cliamp, Moonlight,
+  LocalSend, Gliff)
 - installs two packages from a local pacman repo injected into the
   build:
   - [`cc-os-sudo-setup`](../packages/cc-os-sudo-setup/) --
@@ -30,6 +34,12 @@ Edge (set as the default browser) and Dropbox, over the network, rather
 than baking them into the image. Then, on every login:
 
 - opens Claude Desktop full screen; `Super+S` summons / hides it
+- trims the app list (`cc-os-trim-apps`): deletes Omarchy's default
+  web app launchers (WhatsApp, Google Messages, Discord, Zoom, HEY,
+  Basecamp, Google Photos / Contacts / Maps, YouTube, X), hides Papers
+  and the two webcam test tools (their packages are needed by something
+  else), and removes any of the 16 left-out apps an Omarchy update
+  brought back
 - skips Omarchy's "pick your default AI agent" prompt (a default-agent
   file in `/etc/skel`)
 - appends `natural_scroll = true` and the `Super+S` binding to the

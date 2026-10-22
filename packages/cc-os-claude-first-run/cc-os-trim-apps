@@ -1,0 +1,37 @@
+#!/bin/bash
+# Every login: keep the app list down to what CC/OS uses. Removes Omarchy apps
+# CC/OS does without if an update brought any back (the ISO build leaves them out
+# of a fresh install), deletes Omarchy's default web app launchers, and hides a
+# few launchers whose packages have to stay. Quiet and idempotent.
+
+# Keep in step with the sed filter in iso-build/omarchy-iso.patch.
+REMOVED_PACKAGES=(libreoffice-fresh evince pinta aether hype omawrite obsidian monologue
+  omacut omacalc signed disktree-bin cliamp moonlight-qt localsend gliff)
+
+# Omarchy copies these from /usr/share/omarchy/applications at install time.
+REMOVED_WEBAPPS=(WhatsApp "Google Messages" Discord Zoom HEY Basecamp "Google Photos"
+  "Google Contacts" "Google Maps" YouTube X)
+
+# Needed by something else, so only hidden: Papers backs the Files quick preview
+# (sushi), and the two webcam test tools come with v4l-utils.
+HIDDEN_LAUNCHERS=(org.gnome.Papers qv4l2 qvidcap)
+
+apps="$HOME/.local/share/applications"
+mkdir -p "$apps"
+
+for name in "${REMOVED_WEBAPPS[@]}"; do
+  [[ -e "$apps/$name.desktop" ]] && omarchy-webapp-remove "$name" >/dev/null 2>&1
+done
+
+for name in "${HIDDEN_LAUNCHERS[@]}"; do
+  if [[ -e /usr/share/applications/$name.desktop ]] && ! grep -qx "NoDisplay=true" "$apps/$name.desktop" 2>/dev/null; then
+    printf '[Desktop Entry]\nType=Application\nName=%s\nNoDisplay=true\n' "$name" >"$apps/$name.desktop"
+  fi
+done
+
+mapfile -t installed < <(pacman -Qq "${REMOVED_PACKAGES[@]}" 2>/dev/null)
+if (( ${#installed[@]} )); then
+  # cc-os-sudo-setup grants passwordless sudo; -n makes this a no-op without it.
+  sudo -n pacman -Rs --noconfirm "${installed[@]}" >/dev/null 2>&1
+fi
+exit 0

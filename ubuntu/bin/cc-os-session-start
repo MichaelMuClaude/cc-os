@@ -1,0 +1,17 @@
+#!/bin/bash
+bin="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+# Every graphical login: keep the app list trimmed, start Dropbox, link Claude's memory
+# folder into it, and open Claude Desktop as the main interface once the GNOME Shell
+# extension is answering.
+setsid "$bin/cc-os-trim-apps" >/dev/null 2>&1 </dev/null &
+"$bin/cc-os-start-dropbox"
+setsid "$bin/cc-os-link-memory" >/dev/null 2>&1 9>&- &
+
+if command -v claude-desktop >/dev/null 2>&1; then
+  for _ in $(seq 1 30); do
+    [[ $("$bin/cc-os-shell" ShowApp "'cc-os-probe'" false) != unavailable ]] && break
+    sleep 1
+  done
+  "$bin/cc-os-claude-toggle" --show &
+fi
+exit 0

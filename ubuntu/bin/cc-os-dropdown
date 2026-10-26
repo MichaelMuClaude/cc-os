@@ -1,0 +1,14 @@
+#!/bin/bash
+# Usage: cc-os-dropdown <window-class> <command...>
+# A terminal that drops down from the top of the screen and goes away on the same key:
+# Super+T runs `claude` in one (class cc-os.console), Super+Shift+T a plain shell
+# (class cc-os.dropdown). The command is started the first time; the GNOME Shell
+# extension places and shows the window.
+bin="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+class=$1; shift
+
+result=$("$bin/cc-os-shell" ToggleDropdown "'$class'")
+if [[ $result == none || $result == unavailable ]]; then
+  setsid "$@" >/dev/null 2>&1 </dev/null &
+fi
+exit 0

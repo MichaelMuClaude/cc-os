@@ -1,0 +1,9 @@
+#!/bin/bash
+# Call a method of the CC/OS GNOME Shell extension and print its one-word answer:
+# shown, hidden, none (no matching window), or unavailable (extension not running).
+# Usage: cc-os-shell Method [arg...]   args are GVariant text: "'claude'" true 100
+method=$1; shift
+out=$(gdbus call --session --dest org.ccos.Shell --object-path /org/ccos/Shell \
+  --method "org.ccos.Shell.$method" "$@" 2>/dev/null) || { echo unavailable; exit 1; }
+out=${out#"('"}; out=${out%"',)"}
+echo "$out"

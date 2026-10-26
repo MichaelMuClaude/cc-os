@@ -1,0 +1,13 @@
+#!/bin/bash
+# Window actions behind the shortcuts, run by the GNOME Shell extension.
+#   cc-os-window tile             Super+Return: tile every window, or widen the focused one
+#   cc-os-window resize <pixels>  Super+= / Super+-: grow (+) or shrink (-) the focused window
+#   cc-os-window next-workspace   Alt+Tab
+bin="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+case ${1:-} in
+  tile) "$bin/cc-os-shell" TileOrWiden ;;
+  resize) "$bin/cc-os-shell" Resize "${2:?pixels}" ;;
+  next-workspace) "$bin/cc-os-shell" NextWorkspace ;;
+  *) echo "Usage: cc-os-window tile | resize <pixels> | next-workspace" >&2; exit 2 ;;
+esac >/dev/null

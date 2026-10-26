@@ -1,0 +1,12 @@
+#!/bin/bash
+# Super+S shows Claude Desktop wide, or hides it if it is already in front.
+# Super+Space (--show) only ever brings it up. Launches it when it isn't running.
+bin="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+method=ToggleApp
+[[ ${1:-} == --show ]] && method=ShowApp
+
+result=$("$bin/cc-os-shell" "$method" "'claude'" true)
+if [[ $result == none || $result == unavailable ]]; then
+  setsid claude-desktop >/dev/null 2>&1 </dev/null &
+fi
+exit 0

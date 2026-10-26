@@ -1,0 +1,15 @@
+#!/bin/bash
+# Super+B shows the default browser, or hides it if it is already in front. Launches it
+# when it isn't running.
+bin="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+result=$("$bin/cc-os-shell" ToggleApp "'firefox,chrome,chromium,edge,brave,vivaldi,opera,zen'" false)
+if [[ $result == none || $result == unavailable ]]; then
+  desktop=$(xdg-settings get default-web-browser 2>/dev/null)
+  if [[ -n $desktop ]]; then
+    setsid gtk-launch "$desktop" >/dev/null 2>&1 </dev/null &
+  else
+    setsid xdg-open about:blank >/dev/null 2>&1 </dev/null &
+  fi
+fi
+exit 0

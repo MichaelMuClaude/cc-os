@@ -1,0 +1,26 @@
+#!/bin/bash
+# Every login: keep the app list down to what CC/OS uses. Removes the Ubuntu apps CC/OS
+# does without if an update brought any back. Quiet and idempotent.
+
+# install.sh drops this marker when you chose to keep Ubuntu's apps.
+[[ -e ${XDG_STATE_HOME:-$HOME/.local/state}/cc-os/keep-apps ]] && exit 0
+
+REMOVED_PACKAGES=(libreoffice-common rhythmbox transmission-gtk remmina thunderbird)
+REMOVED_SNAPS=(thunderbird)
+
+installed=()
+for pkg in "${REMOVED_PACKAGES[@]}"; do
+  dpkg -s "$pkg" >/dev/null 2>&1 && installed+=("$pkg")
+done
+# install.sh grants passwordless sudo; -n makes this a no-op without it.
+if (( ${#installed[@]} )); then
+  sudo -n apt-get purge -y "${installed[@]}" >/dev/null 2>&1
+  sudo -n apt-get autoremove -y >/dev/null 2>&1
+fi
+
+if command -v snap >/dev/null 2>&1; then
+  for name in "${REMOVED_SNAPS[@]}"; do
+    snap list "$name" >/dev/null 2>&1 && sudo -n snap remove "$name" >/dev/null 2>&1
+  done
+fi
+exit 0

@@ -1,25 +1,27 @@
 #!/bin/bash
-# Undo install.sh: drop the shortcuts, the login autostart entry and the sudo rule.
-# It does not uninstall Claude Desktop, Edge or Dropbox, bring back the apps that
-# were removed, or delete the repo. Log out afterwards to stop the running helpers.
+# Undo install.sh. Picks the version for this system, same as install.sh does;
+# set CC_OS_TARGET=omarchy or CC_OS_TARGET=ubuntu to choose one yourself.
 set -euo pipefail
 
-hypr="$HOME/.config/hypr"
-link="$HOME/.local/share/cc-os"
+repo="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-if grep -q ">>> cc-os" "$hypr/bindings.lua" 2>/dev/null; then
-  echo "==> Removing the CC/OS block from $hypr/bindings.lua"
-  sed -i '/^-- >>> cc-os >>>$/,/^-- <<< cc-os <<<$/d' "$hypr/bindings.lua"
+target="${CC_OS_TARGET:-}"
+if [[ -z $target ]]; then
+  id="" id_like=""
+  if [[ -r /etc/os-release ]]; then
+    # shellcheck disable=SC1091
+    . /etc/os-release
+    id="${ID:-}" id_like="${ID_LIKE:-}"
+  fi
+  case " $id $id_like " in
+    *" omarchy "*) target=omarchy ;;
+    *" ubuntu "*|*" debian "*) target=ubuntu ;;
+    *" arch "*)
+      command -v omarchy >/dev/null 2>&1 && target=omarchy ;;
+  esac
 fi
 
-rm -f "$HOME/.config/autostart/cc-os-session.desktop"
-[[ -L $link ]] && rm -f "$link"
-
-sudoers_file=/etc/sudoers.d/01-cc-os-wheel-nopasswd
-if sudo test -e "$sudoers_file"; then
-  echo "==> Removing the passwordless sudo rule"
-  sudo rm -f "$sudoers_file"
-fi
-
-command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 2>&1 || true
-echo "==> Done."
+case $target in
+  omarchy|ubuntu) exec "$repo/$target/uninstall.sh" "$@" ;;
+  *) echo "Set CC_OS_TARGET=omarchy or CC_OS_TARGET=ubuntu." >&2; exit 1 ;;
+esac

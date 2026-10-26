@@ -6,7 +6,7 @@
 -- a default and hl.unbind removes one. The README lists the resulting shortcuts.
 
 local root = (os.getenv("HOME") or "") .. "/.local/share/cc-os"
-local bin = root .. "/bin"
+local bin = root .. "/omarchy/bin"
 
 -- Claude. Super+S shows / hides Claude Desktop; Super+Space only ever brings it up.
 o.rebind("SUPER + S", "Claude", bin .. "/cc-os-claude-toggle")
@@ -15,7 +15,7 @@ o.rebind("SUPER + SPACE", "Claude Desktop", bin .. "/cc-os-claude-toggle --show"
 -- Drop-down panels. Super+T is Omarchy's console (the scratchpad), which opens
 -- Claude Code the first time; Super+Shift+T is a plain terminal on its own special
 -- workspace. pcall keeps the rest of this file loading if the module ever fails.
-local ok, err = pcall(dofile, root .. "/hypr/cc-os-dropdown.lua")
+local ok, err = pcall(dofile, root .. "/omarchy/hypr/cc-os-dropdown.lua")
 if not ok then print("cc-os-dropdown: " .. tostring(err)) end
 o.rebind("SUPER + T", "Claude Code console", hl.dsp.workspace.toggle_special("scratchpad"))
 o.rebind("SUPER + SHIFT + T", "Terminal (drop-down)", hl.dsp.workspace.toggle_special("dropdown"))

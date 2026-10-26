@@ -1,0 +1,111 @@
+#!/bin/bash
+# Usage: cc-os-gnome-keys apply | restore
+# apply: set the CC/OS keyboard shortcuts in GNOME (gsettings). The first run saves the
+#        old value of every key it changes to ~/.local/state/cc-os/gnome-keys-backup.sh.
+# restore: put those values back and drop the custom shortcuts.
+# Keys this GNOME doesn't have are skipped, so it is safe on any GNOME version.
+bin="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+state="${XDG_STATE_HOME:-$HOME/.local/state}/cc-os"
+backup="$state/gnome-keys-backup.sh"
+mkdir -p "$state"
+
+WM=org.gnome.desktop.wm.keybindings
+SHELLK=org.gnome.shell.keybindings
+MEDIA=org.gnome.settings-daemon.plugins.media-keys
+CUSTOM=$MEDIA.custom-keybinding
+CUSTOM_BASE=/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/cc-os
+
+recording=0
+
+# set_key <schema> <key> <value>
+set_key() {
+  gsettings range "$1" "$2" >/dev/null 2>&1 || return 0
+  if (( recording )); then
+    printf 'gsettings set %q %q %q\n' "$1" "$2" "$(gsettings get "$1" "$2")" >>"$backup"
+  fi
+  gsettings set "$1" "$2" "$3"
+}
+
+# Custom shortcuts: name | accelerator | command. The commands are absolute paths
+# because GNOME runs them without a shell.
+custom=(
+  "Claude Desktop|<Super>s|$bin/cc-os-claude-toggle"
+  "Open Claude Desktop|<Super>space|$bin/cc-os-claude-toggle --show"
+  "Claude Code console|<Super>t|$bin/cc-os-dropdown cc-os.console alacritty --class cc-os.console -e claude"
+  "Terminal (drop-down)|<Super><Shift>t|$bin/cc-os-dropdown cc-os.dropdown alacritty --class cc-os.dropdown"
+  "Browser|<Super>b|$bin/cc-os-browser-toggle"
+  "File manager|<Super>e|nautilus --new-window"
+  "Tile all / widen focused|<Super>Return|$bin/cc-os-window tile"
+  "Grow window|<Super>equal|$bin/cc-os-window resize 100"
+  "Shrink window|<Super>minus|$bin/cc-os-window resize -100"
+  "Grow window a little|<Super><Alt>equal|$bin/cc-os-window resize 25"
+  "Shrink window a little|<Super><Alt>minus|$bin/cc-os-window resize -25"
+  "Grow window a lot|<Super><Control>equal|$bin/cc-os-window resize 300"
+  "Shrink window a lot|<Super><Control>minus|$bin/cc-os-window resize -300"
+  "Next workspace|<Alt>Tab|$bin/cc-os-window next-workspace"
+)
+
+apply() {
+  [[ -e $backup ]] || { recording=1; : >"$backup"; }
+
+  # Native shortcuts.
+  set_key $WM close "['<Super>q', '<Super>w', '<Alt>F4']"
+  set_key $WM toggle-fullscreen "['<Super>f']"
+  set_key $WM switch-windows "['<Super>Tab']"
+  set_key $WM switch-windows-backward "[]"
+  set_key $WM switch-applications "[]"
+  set_key $WM switch-applications-backward "[]"
+  set_key $WM switch-input-source "['<Control>space']"
+  set_key $WM switch-input-source-backward "[]"
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    n=$((i % 10))
+    set_key $WM "switch-to-workspace-$i" "['<Super>$n']"
+    set_key $WM "move-to-workspace-$i" "['<Super><Shift>$n']"
+  done
+  set_key $SHELLK toggle-application-view "['<Super>o']"
+  set_key $SHELLK toggle-overview "['<Super>m']"
+  set_key $SHELLK show-screenshot-ui "['<Shift><Super>s']"
+  # Free the keys GNOME and the Ubuntu dock use for something else.
+  set_key $SHELLK toggle-quick-settings "[]"
+  set_key $SHELLK toggle-message-tray "['<Super>v']"
+  for i in 1 2 3 4 5 6 7 8 9; do
+    set_key $SHELLK "switch-to-application-$i" "[]"
+  done
+  set_key $MEDIA screensaver "['<Super>l']"
+
+  # Custom shortcuts, in their own cc-os-N slots; anyone else's are kept.
+  local old paths entry i=0
+  old=$(gsettings get $MEDIA custom-keybindings 2>/dev/null) || return 0
+  paths=$(OLD="$old" python3 - <<'PY'
+import ast, os
+old = os.environ["OLD"].replace("@as ", "")
+keep = [p for p in ast.literal_eval(old) if "/custom-keybindings/cc-os-" not in p]
+print(keep)
+PY
+)
+  for entry in "${custom[@]}"; do
+    i=$((i + 1))
+    IFS='|' read -r name binding command <<<"$entry"
+    path="$CUSTOM_BASE-$i/"
+    gsettings set "$CUSTOM:$path" name "$name"
+    gsettings set "$CUSTOM:$path" command "$command"
+    gsettings set "$CUSTOM:$path" binding "$binding"
+    paths=$(PATHS="$paths" NEW="$path" python3 -c 'import ast,os; l=ast.literal_eval(os.environ["PATHS"]); l.append(os.environ["NEW"]); print(l)')
+  done
+  set_key $MEDIA custom-keybindings "$paths"
+}
+
+restore() {
+  [[ -e $backup ]] && bash "$backup"
+  local i
+  for i in $(seq 1 ${#custom[@]}); do
+    dconf reset -f "$CUSTOM_BASE-$i/" 2>/dev/null || true
+  done
+  rm -f "$backup"
+}
+
+case ${1:-} in
+  apply) apply ;;
+  restore) restore ;;
+  *) echo "Usage: cc-os-gnome-keys apply | restore" >&2; exit 2 ;;
+esac

@@ -1,0 +1,7 @@
+{
+  "uuid": "cc-os-shell@cc-os.github.io",
+  "name": "CC/OS shell helper",
+  "description": "Window actions for the CC/OS shortcuts: show / hide an app, drop-down terminals, tile all windows, resize, next workspace. Exposes org.ccos.Shell on the session bus.",
+  "shell-version": ["46", "47", "48", "49", "50"],
+  "version": 1
+}

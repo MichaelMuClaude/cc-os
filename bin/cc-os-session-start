@@ -1,0 +1,16 @@
+#!/bin/bash
+bin="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+# Every graphical login: trim the app list, open Claude Desktop as the main
+# interface, and finish any first-run setup that is still pending. The keybindings
+# are not set here: Hyprland loads hypr/cc-os.lua itself.
+setsid "$bin/cc-os-console-watch" >/dev/null 2>&1 </dev/null &
+setsid "$bin/cc-os-trim-apps" >/dev/null 2>&1 </dev/null &
+if ! pacman -Q claude-desktop >/dev/null 2>&1; then
+  setsid omarchy-launch-floating-terminal-with-presentation "$bin/cc-os-install-apps" &
+else
+  "$bin/cc-os-claude-toggle" --show &
+  pacman -Q dropbox >/dev/null 2>&1 || setsid "$bin/cc-os-install-dropbox" >/dev/null 2>&1 &
+fi
+"$bin/cc-os-start-dropbox"
+setsid "$bin/cc-os-link-memory" >/dev/null 2>&1 9>&- &
+exit 0

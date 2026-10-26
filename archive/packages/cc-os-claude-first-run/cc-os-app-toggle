@@ -1,0 +1,37 @@
+#!/bin/bash
+# Usage: cc-os-app-toggle <name> <window-class> <launch command...>
+# One key to summon an app and the same key to hide it again, instead of opening
+# a new window every time. Not running -> launch it. Showing on this workspace ->
+# hide it (to special:<name>). Hidden or on another workspace -> bring it here.
+# All windows of that class are treated as one group (a browser can have several).
+name=$1; class=$2; shift 2
+hd() { hyprctl dispatch "$1" >/dev/null 2>&1; }
+addrs() { hyprctl clients -j | jq -r --arg c "$class" '.[] | select(.class == $c) | .address'; }
+
+mapfile -t all < <(addrs)
+if (( ${#all[@]} == 0 )); then
+  setsid uwsm-app -- "$@" >/dev/null 2>&1 </dev/null &
+  exit 0
+fi
+
+aws=$(hyprctl activeworkspace -j | jq -r '.name')
+active=$(hyprctl activewindow -j | jq -r '.address // ""')
+mapfile -t here < <(hyprctl clients -j | jq -r --arg c "$class" --arg w "$aws" '.[] | select(.class == $c and .workspace.name == $w) | .address')
+
+if (( ${#here[@]} > 0 )); then
+  focused_in_group=false
+  for a in "${here[@]}"; do [[ $a == "$active" ]] && focused_in_group=true; done
+  if $focused_in_group; then
+    for a in "${here[@]}"; do
+      hd "hl.dsp.window.move({ workspace = \"special:$name\", follow = false, window = \"address:$a\" })"
+    done
+  else
+    hd "hl.dsp.focus({ window = \"address:${here[0]}\" })"
+  fi
+else
+  ws=$(hyprctl activeworkspace -j | jq -r '.id')
+  for a in "${all[@]}"; do
+    hd "hl.dsp.window.move({ workspace = \"$ws\", follow = true, window = \"address:$a\" })"
+  done
+  hd "hl.dsp.focus({ window = \"address:${all[0]}\" })"
+fi

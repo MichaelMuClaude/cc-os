@@ -1,0 +1,25 @@
+#!/bin/bash
+bin="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+# Runs in a floating terminal on first login: download the latest Claude
+# Desktop (and Dropbox), then open Claude at its sign-in screen.
+# Keep the screensaver and idle lock from starting while this runs. It takes
+# minutes, and a window that opens while the screensaver is up lands on the
+# screensaver's special workspace and is gone once the screensaver ends.
+stay_awake_file="$HOME/.local/state/omarchy/indicators/stay-awake"
+if [[ ! -f $stay_awake_file ]]; then
+  omarchy-toggle-idle stay-awake >/dev/null
+  trap 'omarchy-toggle-idle allow-idle >/dev/null' EXIT
+fi
+
+echo "Setting up CC/OS -- downloading Claude Desktop, Edge and Dropbox..."
+echo "Waiting for network (connect Wi-Fi from the top bar if needed)"
+until nm-online -q -t 10; do sleep 3; done
+
+sudo pacman -Syu --noconfirm --needed claude-desktop || exit 1
+pacman -Q claude-desktop >/dev/null || exit 1
+# Edge is the default browser. If it can't be installed, Chromium stays the
+# default and everything else carries on.
+omarchy-install-browser edge && omarchy-default-browser edge || echo "Edge install failed; keeping the current browser."
+"$bin/cc-os-install-dropbox" || echo "Dropbox install failed; will retry at next login."
+"$bin/cc-os-start-dropbox"
+"$bin/cc-os-claude-toggle" --show

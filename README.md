@@ -2,9 +2,9 @@
 
 > **An OS with Claude Code pre-installed — with sudo.**
 
-**Status: early but working.** CC/OS runs day to day on one laptop. It is
-shipped as two Arch packages on top of Omarchy, plus a patch that builds a
-CC/OS installer ISO. Expect rough edges and frequent changes.
+**Status: early but working.** CC/OS runs day to day on one laptop. It is a
+post-install script that turns a stock Omarchy install into CC/OS: no custom
+ISO and no packages to build. Expect rough edges and frequent changes.
 
 CC/OS (Claude Code OS) is a minimal, Chromebook-like Linux desktop where
 Claude (Desktop/Code) is the primary — eventually sole — interface, instead
@@ -13,19 +13,44 @@ of one app among many on a general-purpose desktop.
 See [PLAN.md](PLAN.md) for where the idea is heading. It is a living doc,
 not a spec.
 
+## Install
+
+On a fresh, stock Omarchy install, as your normal user:
+
+```bash
+git clone https://github.com/MichaelMuClaude/cc-os ~/.local/share/cc-os
+~/.local/share/cc-os/install.sh
+```
+
+Read `install.sh` first: it can give your user passwordless root. It asks
+before it does that, and before it removes any apps. `--yes` answers yes to
+both, and `--no-sudoers`, `--keep-apps` and `--no-apps` skip the sudo rule,
+the app removal and the Claude Desktop / Edge / Dropbox downloads. Run it
+again after `git pull` to update. `uninstall.sh` undoes it (it leaves the
+downloaded apps alone).
+
+If an older, package-based CC/OS was installed on the machine, first run
+`omarchy refresh config hypr/bindings.lua`: the packages appended their
+shortcuts to that file, and `install.sh` replaces them with one line.
+
 ## What's here
 
-- [`packages/cc-os-claude-first-run`](packages/cc-os-claude-first-run/):
-  makes Claude the main interface. It sets Claude Code as the default agent,
-  opens Claude Desktop at login, installs the CC/OS keyboard shortcuts below,
-  syncs Claude's memory through Dropbox, trims Omarchy's preinstalled apps
-  and web apps down to a small set, and turns on natural touchpad scrolling.
-- [`packages/cc-os-sudo-setup`](packages/cc-os-sudo-setup/): passwordless
-  `sudo` for the `wheel` group, so Claude Code can operate the machine
-  without a password prompt for every command.
-- [`iso-build/`](iso-build/) and [`cidata/`](cidata/): the patch and
-  autoinstall config for building a CC/OS installer ISO from
-  `omarchy-iso`.
+- [`install.sh`](install.sh) / [`uninstall.sh`](uninstall.sh): the post-install
+  script and its undo. The repo is linked at `~/.local/share/cc-os` and
+  everything runs from there, so a `git pull` is the update.
+- [`hypr/cc-os.lua`](hypr/cc-os.lua): the keyboard shortcuts below and
+  natural touchpad scrolling, loaded by one line `install.sh` adds to
+  `~/.config/hypr/bindings.lua`. [`hypr/cc-os-dropdown.lua`](hypr/cc-os-dropdown.lua)
+  is the drop-down terminal panel.
+- [`bin/`](bin/): the login session (`cc-os-session-start` opens Claude
+  Desktop, keeps Omarchy's preinstalled apps and web apps trimmed down to a
+  small set, starts Dropbox and syncs Claude's memory through it), the
+  show / hide toggles behind the shortcuts, and the first-run downloads.
+- [`cidata/`](cidata/): an autoinstall config for installing a stock Omarchy
+  ISO unattended, with Chinese Pinyin input preconfigured.
+- [`archive/`](archive/): the earlier packaging approach (two Arch packages
+  and a patch that builds a custom installer ISO). Kept for reference, no
+  longer maintained.
 
 ## Keyboard shortcuts
 

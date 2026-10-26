@@ -1,0 +1,5 @@
+#!/bin/bash
+# The official Dropbox client ships in Omarchy's package repo.
+pacman -Q dropbox >/dev/null 2>&1 && exit 0
+sudo pacman -S --noconfirm --needed dropbox || exit 1
+pacman -Q dropbox >/dev/null

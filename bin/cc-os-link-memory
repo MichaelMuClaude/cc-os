@@ -1,0 +1,30 @@
+#!/bin/bash
+bin="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+# Points Claude Code's memory folder at ~/Dropbox/cc_Memory -- but only after
+# Dropbox has finished its first sync. Linking earlier would let Claude Code
+# write memories into an empty folder that later collides with the synced one.
+state="${XDG_STATE_HOME:-$HOME/.local/state}/cc-os"; mkdir -p "$state"
+[[ -e $state/memory-linked ]] && exit 0
+exec 9>"$state/link-memory.lock"; flock -n 9 || exit 0
+
+# Three "Up to date" readings in a row, a minute apart: right after linking the
+# account the daemon can briefly say so before it has even listed the files.
+ok=0
+while (( ok < 3 )); do
+  if [[ $("$bin/cc-os-dropbox-status") == "Up to date" ]]; then
+    ok=$((ok + 1)); sleep 60
+  else
+    ok=0; sleep 20
+  fi
+done
+
+target="$HOME/Dropbox/cc_Memory"
+mkdir -p "$target"
+proj="$HOME/.claude/projects/$(printf '%s' "$HOME" | tr / -)"
+mkdir -p "$proj"
+link="$proj/memory"
+if [[ -e $link && ! -L $link ]]; then
+  mv "$link" "$link.local-backup-$(date +%Y%m%d%H%M%S)"
+fi
+ln -sfn "$target" "$link"
+: >"$state/memory-linked"

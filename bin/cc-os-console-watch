@@ -1,0 +1,26 @@
+#!/bin/bash
+# Keeps apps out of the drop-down panels: the Claude Code console (Super+T)
+# and the drop-down terminal (Super+Shift+T). Anything that opens inside one of them (say,
+# an app launched from there), other than the panel's own terminal, is moved to the
+# workspace underneath and opened wide, the panel is put away, and the app gets
+# focus. Runs for the whole session; started once by cc-os-session-start.
+exec 9>"${XDG_RUNTIME_DIR:-/tmp}/cc-os-console-watch.lock"
+flock -n 9 || exit 0
+
+# Panel workspace -> the class of the terminal that belongs there.
+declare -A own=([special:scratchpad]=org.omarchy.agent [special:dropdown]=cc-os.dropdown)
+hd() { hyprctl dispatch "$1" >/dev/null 2>&1; }
+sock="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+
+socat -U - UNIX-CONNECT:"$sock" 9>&- | while IFS= read -r line; do
+  [[ $line == openwindow\>\>* ]] || continue
+  IFS=, read -r addr ws class _ <<<"${line#openwindow>>}"
+  [[ -n ${own[$ws]:-} && $class != "${own[$ws]}" ]] || continue
+  a="address:0x$addr"
+  mon=$(hyprctl monitors -j | jq -c --arg w "$ws" 'first(.[] | select(.specialWorkspace.name == $w)) // first(.[] | select(.focused))')
+  target=$(jq -r '.activeWorkspace.id' <<<"$mon")
+  hd "hl.dsp.window.move({ workspace = \"$target\", follow = false, window = \"$a\" })"
+  [[ $(jq -r '.specialWorkspace.name' <<<"$mon") == "$ws" ]] && hd "hl.dsp.workspace.toggle_special(\"${ws#special:}\")"
+  hd "hl.dsp.focus({ window = \"$a\" })"
+  hd "hl.dsp.window.fullscreen({ mode = \"maximized\", action = \"set\", window = \"$a\" })"
+done

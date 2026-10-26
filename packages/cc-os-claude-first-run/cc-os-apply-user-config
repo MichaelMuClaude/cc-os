@@ -260,6 +260,17 @@ hl.unbind("XF86Calculator")
 LUA
   changed=1
 fi
+if ! grep -q "CC/OS: Super+Return opens Claude Desktop" "$hypr/bindings.lua" 2>/dev/null; then
+  cat >>"$hypr/bindings.lua" <<'LUA'
+
+-- CC/OS: Super+Return opens Claude Desktop (was: tile all / widen focused); Super+T is
+-- the Claude Code console and Super+Shift+T the plain drop-down terminal.
+o.rebind("SUPER + RETURN", "Claude Desktop", "/usr/lib/cc-os/cc-os-claude-toggle --show")
+o.rebind("SUPER + T", "Claude Code console", hl.dsp.workspace.toggle_special("scratchpad"))
+o.rebind("SUPER + SHIFT + T", "Terminal (drop-down)", hl.dsp.workspace.toggle_special("dropdown"))
+LUA
+  changed=1
+fi
 if ! grep -q "CC/OS: natural" "$hypr/input.lua" 2>/dev/null; then
   cat >>"$hypr/input.lua" <<'LUA'
 

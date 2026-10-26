@@ -38,12 +38,13 @@ removed.
 |---|---|
 | Super+S | Show / hide Claude Desktop |
 | Super+Space | Drop down the Claude Code console |
-| Super+T | Drop down a terminal |
+| Super+T | Drop down the Claude Code console |
+| Super+Shift+T | Drop down a plain terminal |
 | Super+B | Show / hide the browser |
 | Super+E | File manager |
 | Super+O | App list |
 | Super+M | Omarchy menu |
-| Super+Return | Tile every window; press again to widen the focused one |
+| Super+Return | Open Claude Desktop |
 | Super+F | Full screen |
 | Super+= / Super+- | Grow / shrink the focused window (add Alt for a little, Ctrl for a lot) |
 | Super+Tab | Next window |
